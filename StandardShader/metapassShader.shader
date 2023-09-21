@@ -8,7 +8,6 @@
         [HDR] _EmissionColor("Emission Color", Color) = (0, 0, 0, 1)
     }
 
-
     CustomEditor "TakenokoStandardGUI"
     
     SubShader {

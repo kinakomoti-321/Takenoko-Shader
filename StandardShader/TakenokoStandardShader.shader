@@ -16,7 +16,7 @@
     //ShaderKeyWord : _TESTNAME_ON
     //Constant : TESTNAME
 
-    //Fragment and Vertex : FragTestName
+    //Fragment and Vertex : [Frag or Vert]TKTestName
 
     Properties
     {
@@ -33,8 +33,6 @@
 
         _HeightMap("Height Texture", 2D) = "black" {}
 
-        _AOTex("AO Texture", 2D) = "white" {}
-
         [HDR]_EmissionColor("Emission", Color) = (0,0,0,0)
         _EmissionMap("Emission Texture", 2D) = "white" {}
 
@@ -42,6 +40,8 @@
         [KeywordEnum(LINER,NONLINER)]_SHMode("SHMode", Int) = 0  
     }
 
+    CustomEditor "TakenokoStandardGUI"
+    
     SubShader
     {
 
@@ -55,14 +55,17 @@
             ZWrite On
 
             CGPROGRAM
-            #pragma vertex VertTakenokoStandardForwardBase
-            #pragma fragment FragTakenokoStandardForwardBase
+            #pragma vertex VertTKStandardForwardBase
+            #pragma fragment FragTKStandardForwardBase
             #pragma multi_compile_local _LIGHTMAPMODE_NONE _LIGHTMAPMODE_SH _LIGHTMAPMODE_MONOSH
             #pragma multi_compile_local _SHMODE_LINER _SHMODE_NONLINER
             #pragma multi_compile_prepassfinal
 
+            #pragma shader_feature _NORMALMAP_ON
+
             #include "UnityCG.cginc"
             #include "TakenokoStandardForward.cginc"
+
             ENDCG
         }
 
@@ -77,7 +80,7 @@
             #include "UnityStandardMeta.cginc"
 
             #pragma vertex vert_meta // change name and implement if customizing vertex shader
-            #pragma fragment frag_meta_standard // changed to customized fragment shader name
+            #pragma fragment FragTKStandardMeta // changed to customized fragment shader name
 
             #pragma shader_feature _EMISSION
             #pragma shader_feature _METALLICGLOSSMAP
@@ -85,20 +88,17 @@
             #pragma shader_feature ___ _DETAIL_MULX2
             #pragma shader_feature EDITOR_VISUALIZATION
 
-            float4 _BaseColor;
-            sampler2D _BaseColorTex;
-            float4 _BaseColorTex_ST;
-
-            float4 _Emission;
-
-            float4 frag_meta_standard(v2f_meta i) : SV_Target
+            float3 _BaseColor;
+            sampler2D _BaseColorMap;
+            //float3 _EmissionColor;
+            float4 FragTKStandardMeta(v2f_meta i) : SV_Target
             {
                 UnityMetaInput o;
                 UNITY_INITIALIZE_OUTPUT(UnityMetaInput, o);
 
-                o.Albedo = _BaseColor * tex2D(_BaseColorTex,i.uv);
-                o.SpecularColor = 1.0;
-                o.Emission = _Emission.rgb;
+                o.Albedo = _BaseColor * tex2D(_BaseColorMap, i.uv).rgb;
+                o.SpecularColor = 0.0;
+                o.Emission = _EmissionColor.rgb;
 
                 return UnityMetaFragment(o);
             }

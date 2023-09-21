@@ -53,7 +53,7 @@
     sampler2D _EmissionMap;
 
 
-    TKStandardVertexOutput VertTakenokoStandardForwardBase (TKStandardVertexInput v)
+    TKStandardVertexOutput VertTKStandardForwardBase (TKStandardVertexInput v)
     {
         TKStandardVertexOutput o;
         o.vertex = UnityObjectToClipPos(v.vertex);
@@ -78,7 +78,7 @@
     }
 
 
-    fixed4 FragTakenokoStandardForwardBase(TKStandardVertexOutput i) : SV_Target
+    fixed4 FragTKStandardForwardBase(TKStandardVertexOutput i) : SV_Target
     {
         float3 shade_color;
 
