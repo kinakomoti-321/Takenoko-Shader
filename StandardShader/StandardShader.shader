@@ -1,23 +1,45 @@
-﻿Shader "Kinanko/StandardShader"
+﻿Shader "Takenoko/StandardShader"
 {
+    //------------------------------------
+    //Naming convention
+    //------------------------------------
+    //Properties : _TestName
+    //Struct : TestName
+    //Function  
+    //- math(static) function : testname
+    //- self made function : TestName_TK()
+    //- experimental function : TestName_TK_EX()
+    //- other function : TestName or testName
+    //Variable : test_name
+
+    //Define : TEST_NAME
+    //ShaderKeyWord : _TESTNAME_ON
+    //Constant : TESTNAME
+
+    //Fragment and Vertex : FragTestName
 
     Properties
     {
         _BaseColor ("Base Color", Color) = (1,1,1,1)
-        _BaseColorTex("Base Color Texture", 2D) = "white" {}
+        _BaseColorMap("Base Color Texture", 2D) = "white" {}
+
         _Roughness ("Roughness", Range(0,1)) = 0.5
-        _RoughnessTex("Roughness Texture", 2D) = "white" {}
+        _RoughnessMap("Roughness Texture", 2D) = "white" {}
+
         _Metallic ("Metallic", Range(0,1)) = 0.0
-        _MetallicTex("Metallic Texture", 2D) = "white" {}
-        [Normal]_NormalTex("Normal Texture", 2D) = "bump" {}
+        _MetallicMap("Metallic Texture", 2D) = "white" {}
+        
+        [Normal]_BumpMap("Normal Texture", 2D) = "bump" {}
+
+        _HeightMap("Height Texture", 2D) = "black" {}
+
         _AOTex("AO Texture", 2D) = "white" {}
 
-        [HDR]_Emission("Emission", Color) = (0,0,0,0)
+        [HDR]_EmissionColor("Emission", Color) = (0,0,0,0)
+        _EmissionMap("Emission Texture", 2D) = "white" {}
 
         [KeywordEnum(NONE,SH,MONOSH)]_LightmapMode("LightmapMode", Int) = 0  
         [KeywordEnum(LINER,NONLINER)]_SHMode("SHMode", Int) = 0  
-        [KeywordEnum(NONE,NORMALMAP,NOISE)]_NormalMode("NormalMode", Int) = 0
-
     }
 
     SubShader
@@ -29,12 +51,12 @@
                 "LightMode"="ForwardBase"  
                 "RenderType"="Opaque" 
             }
-            LOD 100
+
             ZWrite On
 
             CGPROGRAM
             #pragma vertex vert
-            #pragma fragment frag
+            #pragma fragment FragTakenokoStandardForwardBase
             #pragma multi_compile_local _LIGHTMAPMODE_NONE _LIGHTMAPMODE_SH _LIGHTMAPMODE_MONOSH
             #pragma multi_compile_local _NORMALMODE_NONE _NORMALMODE_NORMALMAP _NORMALMODE_NOISE
             #pragma multi_compile_local _SHMODE_LINER _SHMODE_NONLINER
@@ -76,21 +98,30 @@
             float _Roughness;
             float _Metallic;
 
-            sampler2D _BaseColorTex;
-            float4 _BaseColorTex_ST;
+            sampler2D _BaseColorMap;
+            float4 _BaseColorMap_ST;
 
-            sampler2D _RoughnessTex;
-            float4 _RoughnessTex_ST;
+            sampler2D _RoughnessMap;
+            float4 _RoughnessMap_ST;
 
-            sampler2D _MetallicTex;
-            float4 _MetallicTex_ST;
+            sampler2D _MetallicMap;
+            float4 _MetallicMap_ST;
 
-            sampler2D _NormalTex;
-            float4 _NormalTex_ST;
+            sampler2D _BumpMap;
+            float4 _BumpMap_ST;
 
-            sampler2D _AOTex;
+            float4 _EmissionColor;
+            sampler2D _EmissionMap;
 
-            float4 _Emission;
+            struct MaterialParameter{
+                float3 basecolor;
+                float roughness;
+                float metallic;
+                float3 normal;
+                float3 emission;
+            };
+
+
 
             v2f vert (appdata v)
             {
@@ -110,66 +141,41 @@
                 return o;
             }
 
-            float3 getNormal(float2 uv){
-                float2 epsiron = float2(0.0001,0.000);
-                float3 pos = float3(uv,_Time.x * 0.1);
-                
-                float3 dx = float3(2.0 * epsiron.x,CyclicNoise(pos + epsiron.xyy) - CyclicNoise(pos - epsiron.xyy),0.0);
-                float3 dy = float3(0.0,CyclicNoise(pos + epsiron.yxy) - CyclicNoise(pos - epsiron.yxy),2.0 * epsiron.x);
-                
-                dx.y *= 0.5;
-                dy.y *= 0.5;
-                return normalize(cross(dy,dx));
+            float3 getNormalMap(float2 uv){
+                float3 normal = UnpackNormal(tex2D(_BumpMap,uv));
+                normal = normalize(normal);
+                return normal;
             }
 
-            fixed4 frag (v2f i) : SV_Target
+
+            fixed4 FragTakenokoStandardForwardBase(v2f i) : SV_Target
             {
-                float3 col = _BaseColor.rgb;
+                float3 shade_color;
 
+                MaterialParameter mat_param;
 
-                float3 basecolor = _BaseColor.rgb * tex2D(_BaseColorTex,i.uv).rgb;
-                float roughness = _Roughness * tex2D(_RoughnessTex,i.uv).r;
-                float metallic = _Metallic * tex2D(_MetallicTex,i.uv).r;
-                float ao = tex2D(_AOTex,i.uv).r;
+                float3 basecolor = _BaseColor.rgb * tex2D(_BaseColorMap,i.uv).rgb;
+                float roughness = _Roughness * tex2D(_RoughnessMap,i.uv).r;
+                float metallic = _Metallic * tex2D(_MetallicMap,i.uv).r;
                 
                 float3 normalWorld = i.worldNormal;
 
-               #ifdef _NORMALMODE_NONE
-                    normalWorld = i.worldNormal;
-               #elif _NORMALMODE_NORMALMAP
-                    float3 normal = UnpackNormal(tex2D(_NormalTex,i.uv));
-                    normal = normalize(normal);
-                    normalWorld = localToWorld(i.worldTangent,i.worldNormal,i.worldBinormal,float3(normal.x,normal.z,-normal.y));
-                    normalWorld = normalize(normalWorld);
-               #elif _NORMALMODE_NOISE
-                    float3 normal = getNormal(i.uv * 0.1);
-                    //normalWorld = normal.x * i.worldTangent + i.worldBinormal * normal.z + i.worldNormal * normal.y;
-                    normalWorld = localToWorld(i.worldTangent,i.worldNormal,i.worldBinormal,normal);
-                    normalWorld = normalize(normalWorld);
-               #endif
-
-                float3 lightmapDiffuse = basecolor;
-                float3 lightmapSpecular;
-
+                float3 normal = UnpackNormal(tex2D(_BumpMap,i.uv));
+                normal = normalize(normal);
+                normalWorld = localToWorld(i.worldTangent,i.worldNormal,i.worldBinormal,float3(normal.x,normal.z,-normal.y));
+                normalWorld = normalize(normalWorld);
 
                 #ifdef LIGHTMAP_ON
-                //Lightmapが付けられてるとき
-                sample_lightmap(lightmapDiffuse,lightmapSpecular,normalWorld,i.lightmapUV);
-                col = lightmapDiffuse * basecolor + _Emission.rgb;
+                    float3 lightmapDiffuse = 0;
+                    float3 lightmapSpecular = 0;
+                    sample_lightmap(lightmapDiffuse,lightmapSpecular,normalWorld,i.lightmapUV);
+                    shade_color = lightmapDiffuse * basecolor + _EmissionColor.rgb;
                 #else
-                //Lightmapがない時
-                //lightprobeをもらう
-                float3 shlight = ShadeSH9(float4(normalWorld,1.0));
-                col = shlight * basecolor + _Emission.rgb;
+                    float3 shlight = ShadeSH9(float4(normalWorld,1.0));
+                    shade_color = shlight * basecolor + _EmissionColor.rgb;
                 #endif
 
-                //col = UnpackNormal(tex2D(_NormalTex,i.uv));
-                // normalWorld = UnpackNormal(tex2D(_NormalTex,i.uv));
-                // normalWorld = normalize(normalWorld);
-                // normalWorld = (i.worldTangent * normalWorld.x + i.worldBinormal * normalWorld.y + i.worldNormal * normalWorld.z);
-                //col = normalWorld * 0.5 + 0.5;
-                
-                return fixed4(col * ao,1.0);
+                return fixed4(shade_color,1.0);
             }
             ENDCG
         }
@@ -185,9 +191,9 @@
             #include "UnityStandardMeta.cginc"
 
             #pragma vertex vert_meta // change name and implement if customizing vertex shader
-            #pragma fragment frag_meta_custom // changed to customized fragment shader name
+            #pragma fragment frag_meta_standard // changed to customized fragment shader name
 
-            //#pragma shader_feature _EMISSION
+            #pragma shader_feature _EMISSION
             #pragma shader_feature _METALLICGLOSSMAP
             #pragma shader_feature _ _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
             #pragma shader_feature ___ _DETAIL_MULX2
@@ -199,13 +205,13 @@
 
             float4 _Emission;
 
-            float4 frag_meta_custom(v2f_meta i) : SV_Target
+            float4 frag_meta_standard(v2f_meta i) : SV_Target
             {
                 UnityMetaInput o;
                 UNITY_INITIALIZE_OUTPUT(UnityMetaInput, o);
 
                 o.Albedo = _BaseColor * tex2D(_BaseColorTex,i.uv);
-                //o.SpecularColor = 1.0;
+                o.SpecularColor = 1.0;
                 o.Emission = _Emission.rgb;
 
                 return UnityMetaFragment(o);

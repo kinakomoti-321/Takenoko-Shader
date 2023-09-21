@@ -1,7 +1,7 @@
 using UnityEditor;
 using UnityEngine;
 
-public class KinakoStandardGUI : ShaderGUI
+public class TakenokoStandardGUI : ShaderGUI
 {
     bool emissionEnabled = false;
     public override void OnGUI(MaterialEditor materialEditor, MaterialProperty[] properties)
@@ -9,19 +9,21 @@ public class KinakoStandardGUI : ShaderGUI
         base.OnGUI(materialEditor, properties);
 
         Material targetMat = materialEditor.target as Material;
-        
+
         EditorGUI.BeginChangeCheck();
-        emissionEnabled = EditorGUILayout.Toggle("Emission",emissionEnabled);
-        if(EditorGUI.EndChangeCheck()){
+        emissionEnabled = EditorGUILayout.Toggle("Emission", emissionEnabled);
+        if (EditorGUI.EndChangeCheck())
+        {
             targetMat.globalIlluminationFlags = MaterialGlobalIlluminationFlags.BakedEmissive;
         }
 
-        if(emissionEnabled){
+        if (emissionEnabled)
+        {
             EditorGUILayout.BeginVertical("Box");
             EditorGUILayout.LabelField("Emission Settings", EditorStyles.boldLabel);
 
             EditorGUI.indentLevel++;
-            Color emissionColor = EditorGUILayout.ColorField("Emission Color",targetMat.GetColor("_EmissionColor"));
+            Color emissionColor = EditorGUILayout.ColorField("Emission Color", targetMat.GetColor("_EmissionColor"));
 
             EditorGUILayout.EndVertical();
         }
