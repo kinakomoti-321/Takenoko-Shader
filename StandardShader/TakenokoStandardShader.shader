@@ -55,7 +55,7 @@
             ZWrite On
 
             CGPROGRAM
-            #pragma vertex vert
+            #pragma vertex VertTakenokoStandardForwardBase
             #pragma fragment FragTakenokoStandardForwardBase
             #pragma multi_compile_local _LIGHTMAPMODE_NONE _LIGHTMAPMODE_SH _LIGHTMAPMODE_MONOSH
             #pragma multi_compile_local _NORMALMODE_NONE _NORMALMODE_NORMALMAP _NORMALMODE_NOISE
@@ -63,11 +63,11 @@
             #pragma multi_compile_prepassfinal
 
             #include "UnityCG.cginc"
-            #include "lightmap.cginc"
+            #include "Lightmap.cginc"
             #include "../common/noise.cginc"
             #include "../common/matrix.cginc"
 
-            struct appdata
+            struct TKStandardVertexInput
             {
                 float4 vertex : POSITION;
                 float2 uv : TEXCOORD0;
@@ -76,7 +76,7 @@
                 float4 tangent : TANGENT;
             };
 
-            struct v2f
+            struct TKStandardVertexOutput
             {
                 float4 vertex : SV_POSITION;
 
@@ -123,9 +123,9 @@
 
 
 
-            v2f vert (appdata v)
+            TKStandardVertexOutput VertTakenokoStandardForwardBase (TKStandardVertexInput v)
             {
-                v2f o;
+                TKStandardVertexOutput o;
                 o.vertex = UnityObjectToClipPos(v.vertex);
                 o.uv = v.uv;
                 o.lightmapUV = v.lightmapUV * unity_LightmapST.xy + unity_LightmapST.zw;
@@ -148,7 +148,7 @@
             }
 
 
-            fixed4 FragTakenokoStandardForwardBase(v2f i) : SV_Target
+            fixed4 FragTakenokoStandardForwardBase(TKStandardVertexOutput i) : SV_Target
             {
                 float3 shade_color;
 
