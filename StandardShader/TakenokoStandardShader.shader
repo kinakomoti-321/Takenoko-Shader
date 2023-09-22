@@ -59,7 +59,7 @@
             #pragma fragment FragTKStandardForwardBase
             #pragma multi_compile_local _LIGHTMAPMODE_NONE _LIGHTMAPMODE_SH _LIGHTMAPMODE_MONOSH
             #pragma multi_compile_local _SHMODE_LINER _SHMODE_NONLINER
-            #pragma multi_compile_prepassfinal
+            //#pragma multi_compile_prepassfinal
 
             #pragma shader_feature _NORMALMAP_ON
 
