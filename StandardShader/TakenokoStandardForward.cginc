@@ -121,9 +121,14 @@
         normalWorld = normalize(normalWorld);
 
         MaterialParameter matParam;
-        matParam.basecolor = _BaseColor.rgb * tex2D(_BaseColorMap,i.uv).rgb;
-        matParam.roughness = _Roughness * tex2D(_RoughnessMap,i.uv).r;
-        matParam.metallic = _Metallic * tex2D(_MetallicMap,i.uv).r;
+        float2 basecolorMapUV = TRANSFORM_TEX(i.uv,_BaseColorMap);
+        matParam.basecolor = _BaseColor.rgb * tex2D(_BaseColorMap,basecolorMapUV).rgb;
+
+        float2 roughnessMapUV = TRANSFORM_TEX(i.uv,_RoughnessMap);
+        matParam.roughness = _Roughness * tex2D(_RoughnessMap,roughnessMapUV).r;
+
+        float2 metallicMapUV = TRANSFORM_TEX(i.uv,_MetallicMap);
+        matParam.metallic = _Metallic * tex2D(_MetallicMap,metallicMapUV).r;
         
 
         //Lighting Infomation
@@ -192,9 +197,6 @@
         #endif
 
         shade_color += lightmap_shade_col;
-        //shade_color += max(dot(giInput.light.dir,normalWorld),0.0) * _LightColor0 * atten;
-        //shade_color = atten;
-        //UNITY_APPLY_FOG(IN.fogCoord, c);
 
         return fixed4(shade_color,1.0);
     }

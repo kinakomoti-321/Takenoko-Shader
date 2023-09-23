@@ -1,13 +1,24 @@
+using System;
+using Codice.Client.BaseCommands.TubeClient;
 using UnityEditor;
 using UnityEngine;
 
 public class TakenokoStandardGUI : ShaderGUI
 {
-    private bool mainTextureMenu_ = false;
+    private bool mainTextureMenu_ = true;
+    private bool diffuseMenu_ = false;
+    private bool specularMenu_ = false;
+    private bool thinfilmMenu_ = false;
+    private bool bakeMenu_ = false;
+    private Rect mainTextureFoldoutRect;
+    private Rect diffuseFoldoutRect;
+    private Rect specularFoldoutRect;
+    private Rect thinfilmFoldoutRect;
+    private Rect bakeFoldoutRect;
+
     bool emissionEnabled_ = false;
     public override void OnGUI(MaterialEditor materialEditor, MaterialProperty[] properties)
     {
-        //base.OnGUI(materialEditor, properties);
         Material targetMat = materialEditor.target as Material;
 
         GUIStyle foldoutStyle = new GUIStyle(EditorStyles.foldout);
@@ -19,88 +30,275 @@ public class TakenokoStandardGUI : ShaderGUI
         boxStyle.normal.textColor = Color.white;
         boxStyle.border = new RectOffset(4, 4, 4, 4);
 
-        Rect foldoutRect = EditorGUILayout.GetControlRect();
-        mainTextureMenu_ = EditorGUI.Foldout(foldoutRect, mainTextureMenu_, "Main Texture", true, foldoutStyle);
-
+        mainTextureFoldoutRect = EditorGUILayout.GetControlRect();
+        mainTextureMenu_ = EditorGUI.Foldout(mainTextureFoldoutRect, mainTextureMenu_, "Main Texture", true, foldoutStyle);
 
         //MainTextureMenu
         if (mainTextureMenu_)
         {
             EditorGUI.indentLevel++;
+            MainMenuGUI(materialEditor, targetMat, properties);
+            EditorGUI.indentLevel--;
+        }
 
-            //BaseColor
-            Color basecolor = EditorGUILayout.ColorField("BaseColor", targetMat.GetColor("_BaseColor"));
-            targetMat.SetColor("_BaseColor", basecolor);
+        GUILayout.Space(10);
 
-            EditorGUI.BeginChangeCheck();
-            Texture basecolorTexture = (Texture)EditorGUILayout.ObjectField("Basecolor Texture", targetMat.GetTexture("_BaseColorMap"), typeof(Texture), false);
-            if (EditorGUI.EndChangeCheck())
-            {
-                targetMat.SetTexture("_BaseColorMap", basecolorTexture);
-            }
+        // Diffuse
+        diffuseFoldoutRect = EditorGUILayout.GetControlRect();
+        diffuseMenu_ = EditorGUI.Foldout(diffuseFoldoutRect, diffuseMenu_, "Diffuse Setting", true, foldoutStyle);
+        if (diffuseMenu_)
+        {
 
-            GUILayout.Space(5);
+        }
 
-            //Metallic
-            float metallic = EditorGUILayout.Slider("Metallic", targetMat.GetFloat("_Metallic"), 0.0f, 1.0f);
-            targetMat.SetFloat("_Metallic", metallic);
+        GUILayout.Space(10);
 
-            EditorGUI.BeginChangeCheck();
-            Texture metallicTexture = (Texture)EditorGUILayout.ObjectField("Metallic Texture", targetMat.GetTexture("_MetallicMap"), typeof(Texture), false);
-            if (EditorGUI.EndChangeCheck())
-            {
-                targetMat.SetTexture("_MetallicMap", metallicTexture);
-            }
+        // SpecularMenu
+        specularFoldoutRect = EditorGUILayout.GetControlRect();
+        specularMenu_ = EditorGUI.Foldout(specularFoldoutRect, specularMenu_, "Specular Setting", true, foldoutStyle);
+        if (specularMenu_)
+        {
 
+        }
 
-            //Roughness
-            float roughness = EditorGUILayout.Slider("Roughness", targetMat.GetFloat("_Roughness"), 0.0f, 1.0f);
-            targetMat.SetFloat("_Roughness", roughness);
+        GUILayout.Space(10);
 
-            EditorGUI.BeginChangeCheck();
-            Texture roughnessTexture = (Texture)EditorGUILayout.ObjectField("Roughness Texture", targetMat.GetTexture("_RoughnessMap"), typeof(Texture), false);
-            if (EditorGUI.EndChangeCheck())
-            {
-                targetMat.SetTexture("_RoughnessMap", roughnessTexture);
-            }
+        // ThinfilmMenu
+        thinfilmFoldoutRect = EditorGUILayout.GetControlRect();
+        thinfilmMenu_ = EditorGUI.Foldout(thinfilmFoldoutRect, thinfilmMenu_, "ThinFilm Setting", true, foldoutStyle);
+        if (thinfilmMenu_)
+        {
 
+        }
 
-            //Normal
-            EditorGUI.BeginChangeCheck();
-            Texture normalTexture = (Texture)EditorGUILayout.ObjectField("Normal Texture", targetMat.GetTexture("_BumpMap"), typeof(Texture), false);
-            if (EditorGUI.EndChangeCheck())
-            {
-                targetMat.SetTexture("_BumpMap", normalTexture);
-            }
+        GUILayout.Space(10);
 
+        // BakeMenu
+        bakeFoldoutRect = EditorGUILayout.GetControlRect();
+        bakeMenu_ = EditorGUI.Foldout(bakeFoldoutRect, bakeMenu_, "Bake Setting", true, foldoutStyle);
+        if (bakeMenu_)
+        {
 
-            //Height
-            EditorGUI.BeginChangeCheck();
-            Texture heightTexture = (Texture)EditorGUILayout.ObjectField("Height Texture", targetMat.GetTexture("_HeightMap"), typeof(Texture), false);
-            if (EditorGUI.EndChangeCheck())
-            {
-                targetMat.SetTexture("_HeightMap", heightTexture);
-            }
+        }
 
+        GUILayout.Space(10);
+    }
 
-            EditorGUI.BeginChangeCheck();
-            emissionEnabled_ = EditorGUILayout.Toggle("Emission", emissionEnabled_);
-            if (EditorGUI.EndChangeCheck())
-            {
+    private void MainMenuGUI(MaterialEditor materialEditor, Material targetMat, MaterialProperty[] properties)
+    {
+        GUIStyle boxStyle = new GUIStyle(GUI.skin.box);
+        boxStyle.normal.background = EditorGUIUtility.Load("builtin skins/darkskin/images/cn entryback.png") as Texture2D;
+        boxStyle.normal.textColor = Color.white;
+        boxStyle.border = new RectOffset(4, 4, 4, 4);
+
+        GUIStyle titleLabelStyle = new GUIStyle(EditorStyles.boldLabel);
+        titleLabelStyle.fontSize = 14;
+
+        // BaseColor
+        EditorGUILayout.LabelField("BaseColor", titleLabelStyle);
+        EditorGUILayout.BeginHorizontal(boxStyle);
+
+        EditorGUILayout.BeginVertical();
+        EditorGUILayout.PrefixLabel("Basecolor Texture");
+        TextureGUI(materialEditor, targetMat, "_BaseColorMap");
+        EditorGUILayout.EndVertical();
+
+        EditorGUILayout.BeginVertical();
+        EditorGUILayout.PrefixLabel("Basecolor");
+        SetColorGUI(materialEditor, targetMat, "_BaseColor");
+        TextureScaleOffsetGUI(materialEditor, targetMat, "_BaseColorMap");
+        EditorGUILayout.EndVertical();
+
+        EditorGUILayout.EndHorizontal();
+
+        GUILayout.Space(5);
+
+        //Metallic
+        EditorGUILayout.LabelField("Metallic", titleLabelStyle);
+        EditorGUILayout.BeginHorizontal(boxStyle);
+
+        EditorGUILayout.BeginVertical();
+        EditorGUILayout.PrefixLabel("Metallic Texture");
+        TextureGUI(materialEditor, targetMat, "_MetallicMap");
+        EditorGUILayout.EndVertical();
+
+        EditorGUILayout.BeginVertical();
+        EditorGUILayout.PrefixLabel("Metallic");
+        SetFloatSliderGUI(materialEditor, targetMat, "_Metallic", 0.0f, 1.0f);
+        TextureScaleOffsetGUI(materialEditor, targetMat, "_MetallicMap");
+        EditorGUILayout.EndVertical();
+
+        EditorGUILayout.EndHorizontal();
+
+        GUILayout.Space(5);
+
+        //Roughness
+        EditorGUILayout.LabelField("Roughness", titleLabelStyle);
+        EditorGUILayout.BeginHorizontal(boxStyle);
+
+        EditorGUILayout.BeginVertical();
+        EditorGUILayout.PrefixLabel("Roughness Texture");
+        TextureGUI(materialEditor, targetMat, "_RoughnessMap");
+        EditorGUILayout.EndVertical();
+
+        EditorGUILayout.BeginVertical();
+        EditorGUILayout.PrefixLabel("Roughness");
+        SetFloatSliderGUI(materialEditor, targetMat, "_Roughness", 0.0f, 1.0f);
+        TextureScaleOffsetGUI(materialEditor, targetMat, "_RoughnessMap");
+        EditorGUILayout.EndVertical();
+
+        EditorGUILayout.EndHorizontal();
+
+        GUILayout.Space(5);
+
+        //Normal
+        EditorGUILayout.LabelField("Normal", titleLabelStyle);
+        EditorGUILayout.BeginHorizontal(boxStyle);
+
+        EditorGUILayout.BeginVertical();
+        EditorGUILayout.PrefixLabel("Normal Texture");
+        TextureGUI(materialEditor, targetMat, "_BumpMap");
+        EditorGUILayout.EndVertical();
+
+        EditorGUILayout.BeginVertical();
+
+        EditorGUILayout.PrefixLabel("Strength");
+        TextureScaleOffsetGUI(materialEditor, targetMat, "_BumpMap");
+
+        EditorGUILayout.EndVertical();
+        EditorGUILayout.EndHorizontal();
+
+        GUILayout.Space(5);
+
+        //Height
+        EditorGUILayout.LabelField("Height", titleLabelStyle);
+        EditorGUILayout.BeginHorizontal(boxStyle);
+
+        EditorGUILayout.BeginVertical();
+        EditorGUILayout.PrefixLabel("Height Texture");
+        TextureGUI(materialEditor, targetMat, "_HeightMap");
+        EditorGUILayout.EndVertical();
+
+        EditorGUILayout.BeginVertical();
+        EditorGUILayout.PrefixLabel("Strength");
+        TextureScaleOffsetGUI(materialEditor, targetMat, "_HeightMap");
+
+        EditorGUILayout.EndVertical();
+        EditorGUILayout.EndHorizontal();
+
+        GUILayout.Space(5);
+
+        EditorGUILayout.LabelField("Emission", titleLabelStyle);
+        emissionEnabled_ = EditorGUILayout.Toggle("Emission", emissionEnabled_);
+        EditorGUI.BeginChangeCheck();
+        if (EditorGUI.EndChangeCheck())
+        {
+            if (!emissionEnabled_)
+                targetMat.globalIlluminationFlags = MaterialGlobalIlluminationFlags.RealtimeEmissive;
+            else
                 targetMat.globalIlluminationFlags = MaterialGlobalIlluminationFlags.BakedEmissive;
-            }
+        }
 
-            if (emissionEnabled_)
-            {
-                EditorGUILayout.BeginVertical("Box");
-                EditorGUILayout.LabelField("Emission Settings", EditorStyles.boldLabel);
+        if (emissionEnabled_)
+        {
 
-                EditorGUI.indentLevel++;
-                Color emissionColor = EditorGUILayout.ColorField("Emission Color", targetMat.GetColor("_EmissionColor"));
+            EditorGUILayout.BeginHorizontal(boxStyle);
 
-                EditorGUILayout.EndVertical();
-            }
+            EditorGUILayout.BeginVertical();
+            EditorGUILayout.PrefixLabel("Emission Texture");
+            TextureGUI(materialEditor, targetMat, "_EmissionMap");
+            EditorGUILayout.EndVertical();
 
+            EditorGUILayout.BeginVertical();
+            EditorGUILayout.PrefixLabel("_EmissionColor");
+            SetColorGUI(materialEditor, targetMat, "_EmissionColor", "", true);
+            TextureScaleOffsetGUI(materialEditor, targetMat, "_EmissionMap");
+            EditorGUILayout.EndVertical();
+            EditorGUILayout.EndHorizontal();
+
+        }
+    }
+
+    private void BakeMenuGUI(MaterialEditor materialEditor, Material targetMat, MaterialProperty[] properties)
+    {
+        GUIStyle boxStyle = new GUIStyle(GUI.skin.box);
+        boxStyle.normal.background = EditorGUIUtility.Load("builtin skins/darkskin/images/cn entryback.png") as Texture2D;
+        boxStyle.normal.textColor = Color.white;
+        boxStyle.border = new RectOffset(4, 4, 4, 4);
+
+    }
+
+    private void TextureGUI(MaterialEditor materialEditor, Material targetMat, String texName, String name = "")
+    {
+        EditorGUI.BeginChangeCheck();
+        Texture texture;
+        if (name == "")
+        {
+            texture = (Texture)EditorGUILayout.ObjectField(GUIContent.none, targetMat.GetTexture(texName), typeof(Texture), false, GUILayout.Height(100), GUILayout.Width(100));
+        }
+        else
+        {
+            texture = (Texture)EditorGUILayout.ObjectField(name, targetMat.GetTexture(texName), typeof(Texture), false, GUILayout.Height(100), GUILayout.Width(100));
+        }
+
+        if (EditorGUI.EndChangeCheck())
+        {
+            targetMat.SetTexture(texName, texture);
+        }
+    }
+
+    private void TextureScaleOffsetGUI(MaterialEditor materialEditor, Material targetMat, String texName)
+    {
+        EditorGUI.BeginChangeCheck();
+        EditorGUILayout.PrefixLabel("Texture Scale");
+        Vector2 textureScale = targetMat.GetTextureScale(texName);
+        Vector2 newTextureScale = EditorGUILayout.Vector2Field(GUIContent.none, textureScale);
+
+        EditorGUILayout.PrefixLabel("Texture Offset");
+        Vector2 textureOffset = targetMat.GetTextureOffset(texName);
+        Vector2 newTextureOffset = EditorGUILayout.Vector2Field(GUIContent.none, textureOffset);
+        if (EditorGUI.EndChangeCheck())
+        {
+            targetMat.SetTextureScale(texName, newTextureScale);
+            targetMat.SetTextureOffset(texName, newTextureOffset);
+        }
+    }
+
+    private void SetColorGUI(MaterialEditor materialEditor, Material targetMat, String colorName, String name = "", bool isHDR = false)
+    {
+        EditorGUI.BeginChangeCheck();
+        Color color;
+        if (name == "")
+        {
+            color = EditorGUILayout.ColorField(GUIContent.none, targetMat.GetColor(colorName), true, true, isHDR);
+        }
+        else
+        {
+            color = EditorGUILayout.ColorField(new GUIContent(name), targetMat.GetColor(colorName), true, true, isHDR);
+        }
+        if (EditorGUI.EndChangeCheck())
+        {
+            targetMat.SetColor(colorName, color);
+        }
+    }
+
+    private void SetFloatSliderGUI(MaterialEditor materialEditor, Material targetMat, String floatName, float mint, float maxt, String name = "")
+    {
+        EditorGUI.BeginChangeCheck();
+        float floatValue;
+
+        if (name == "")
+        {
+            floatValue = EditorGUILayout.Slider(targetMat.GetFloat(floatName), mint, maxt);
+        }
+        else
+        {
+            floatValue = EditorGUILayout.Slider(name, targetMat.GetFloat(floatName), mint, maxt);
+        }
+
+        if (EditorGUI.EndChangeCheck())
+        {
+            targetMat.SetFloat(floatName, floatValue);
         }
     }
 }
