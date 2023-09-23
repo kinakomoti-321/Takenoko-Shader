@@ -107,7 +107,7 @@ Material:
     - _NormalMode: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.02
-    - _Roughness: 0.5
+    - _Roughness: 0
     - _SHMode: 0
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1

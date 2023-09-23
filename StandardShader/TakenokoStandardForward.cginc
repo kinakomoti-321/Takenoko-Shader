@@ -128,7 +128,7 @@
 
         //Lighting Infomation
         //Directional Light
-        float3 lightDir = lightDir = _WorldSpaceLightPos0.xyz;
+        float3 lightDir = _WorldSpaceLightPos0.xyz;
         UNITY_LIGHT_ATTENUATION(atten,i,worldPos)
 
         UnityGI gi;
@@ -175,13 +175,10 @@
         //Directional Light Shading
         float3 main_diffuse;
         float3 main_specular;
-        EvaluateBSDF_TK(main_diffuse,main_specular,normalWorld,giInput,matParam);
-
-        shade_color = main_diffuse + main_specular;
+        EvaluateLighting_TK(main_diffuse,main_specular,normalWorld,giInput,matParam);
 
         //SH Light
-        float3 sh = ShadeSH9(float4(normalWorld,1.0));
-        //shade_color += sh;
+        float3 sh = ShadeSH9(float4(normalWorld,1.0)) * matParam.basecolor ;
 
         //Lightmap
         float3 lightmap_shade_col = 0;
@@ -191,12 +188,10 @@
             sample_lightmap(lightmapDiffuse,lightmapSpecular,normalWorld,i.lightmapUV);
             lightmap_shade_col = lightmapDiffuse * matParam.basecolor + _EmissionColor.rgb;
         #else
-            shade_color += sh;
+            shade_color += (main_diffuse + sh) * (1.0f - matParam.metallic) + main_specular;
         #endif
 
         shade_color += lightmap_shade_col;
-        shade_color = main_specular;
-
         //shade_color += max(dot(giInput.light.dir,normalWorld),0.0) * _LightColor0 * atten;
         //shade_color = atten;
         //UNITY_APPLY_FOG(IN.fogCoord, c);

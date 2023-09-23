@@ -29,6 +29,9 @@ public class TakenokoStandardGUI : ShaderGUI
             EditorGUI.indentLevel++;
 
             //BaseColor
+            Color basecolor = EditorGUILayout.ColorField("BaseColor", targetMat.GetColor("_BaseColor"));
+            targetMat.SetColor("_BaseColor", basecolor);
+
             EditorGUI.BeginChangeCheck();
             Texture basecolorTexture = (Texture)EditorGUILayout.ObjectField("Basecolor Texture", targetMat.GetTexture("_BaseColorMap"), typeof(Texture), false);
             if (EditorGUI.EndChangeCheck())
@@ -39,15 +42,21 @@ public class TakenokoStandardGUI : ShaderGUI
             GUILayout.Space(5);
 
             //Metallic
+            float metallic = EditorGUILayout.Slider("Metallic", targetMat.GetFloat("_Metallic"), 0.0f, 1.0f);
+            targetMat.SetFloat("_Metallic", metallic);
+
             EditorGUI.BeginChangeCheck();
-            Texture metallicTexture = (Texture)EditorGUILayout.ObjectField("Roughness Texture", targetMat.GetTexture("_RoughnessMap"), typeof(Texture), false);
+            Texture metallicTexture = (Texture)EditorGUILayout.ObjectField("Metallic Texture", targetMat.GetTexture("_MetallicMap"), typeof(Texture), false);
             if (EditorGUI.EndChangeCheck())
             {
-                targetMat.SetTexture("_RoughnessMap", metallicTexture);
+                targetMat.SetTexture("_MetallicMap", metallicTexture);
             }
 
 
             //Roughness
+            float roughness = EditorGUILayout.Slider("Roughness", targetMat.GetFloat("_Roughness"), 0.0f, 1.0f);
+            targetMat.SetFloat("_Roughness", roughness);
+
             EditorGUI.BeginChangeCheck();
             Texture roughnessTexture = (Texture)EditorGUILayout.ObjectField("Roughness Texture", targetMat.GetTexture("_RoughnessMap"), typeof(Texture), false);
             if (EditorGUI.EndChangeCheck())
