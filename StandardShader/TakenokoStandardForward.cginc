@@ -4,7 +4,6 @@
     #pragma multi_compile_instancing
     #pragma multi_compile_fog
     #pragma multi_compile_fwdbase
-    #define UNITY_PASS_FORWARDBASE
     #include "UnityShaderVariables.cginc"
     #include "UnityShaderUtilities.cginc"
 
@@ -37,7 +36,6 @@
         float4 lightmapUV : TEXCOORD3;
         UNITY_SHADOW_COORDS(4)
         UNITY_FOG_COORDS(5)
-
 
         #ifndef LIGHTMAP_ON
             #if UNITY_SHOULD_SAMPLE_SH
@@ -122,10 +120,10 @@
         
         normalWorld = normalize(normalWorld);
 
-        MaterialParameter mat_param;
-        float3 basecolor = _BaseColor.rgb * tex2D(_BaseColorMap,i.uv).rgb;
-        float roughness = _Roughness * tex2D(_RoughnessMap,i.uv).r;
-        float metallic = _Metallic * tex2D(_MetallicMap,i.uv).r;
+        MaterialParameter matParam;
+        matParam.basecolor = _BaseColor.rgb * tex2D(_BaseColorMap,i.uv).rgb;
+        matParam.roughness = _Roughness * tex2D(_RoughnessMap,i.uv).r;
+        matParam.metallic = _Metallic * tex2D(_MetallicMap,i.uv).r;
         
 
         //Lighting Infomation
@@ -177,7 +175,9 @@
         //Directional Light Shading
         float3 main_diffuse;
         float3 main_specular;
-        
+        EvaluateBSDF_TK(main_diffuse,main_specular,normalWorld,giInput,matParam);
+
+        shade_color = main_diffuse + main_specular;
 
         //SH Light
         float3 sh = ShadeSH9(float4(normalWorld,1.0));
@@ -189,14 +189,15 @@
             float3 lightmapDiffuse = 0;
             float3 lightmapSpecular = 0;
             sample_lightmap(lightmapDiffuse,lightmapSpecular,normalWorld,i.lightmapUV);
-            lightmap_shade_col = lightmapDiffuse * basecolor + _EmissionColor.rgb;
+            lightmap_shade_col = lightmapDiffuse * matParam.basecolor + _EmissionColor.rgb;
         #else
             shade_color += sh;
         #endif
 
         shade_color += lightmap_shade_col;
+        shade_color = main_specular;
 
-        shade_color += max(dot(giInput.light.dir,normalWorld),0.0) * _LightColor0 * atten;
+        //shade_color += max(dot(giInput.light.dir,normalWorld),0.0) * _LightColor0 * atten;
         //shade_color = atten;
         //UNITY_APPLY_FOG(IN.fogCoord, c);
 

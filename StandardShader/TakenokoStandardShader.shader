@@ -10,7 +10,7 @@
     //- self made function : TestName_TK()
     //- experimental function : TestName_TK_EX()
     //- other function : TestName or testName
-    //Variable : test_name
+    //Variable : testName
 
     //Define : TEST_NAME
     //ShaderKeyWord : _TESTNAME_ON
