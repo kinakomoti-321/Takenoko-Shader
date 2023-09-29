@@ -37,6 +37,14 @@
     sampler2D _EmissionMap;
     float4 _EmissionMap_ST;
 
+    #if defined(_TK_THINFILM_ON) 
+        float _ThinFilmMiddleIOR;
+        float _ThinFilmMiddleThickness;
+        float _ThinFilmMiddleThicknessMin;
+        float _ThinFilmMiddleThicknessMax;
+        Texture2D _ThinFilmMiddleThicknessMap;
+    #endif
+
     struct TKStandardVertexInput
     {
         float4 vertex : POSITION;
@@ -109,7 +117,22 @@
 
         //ThinFilm Parametor
         #if defined(_TK_THINFILM_ON)
-            
+            float thickness_value = _ThinFilmMap.Sample(_MainTex,uv).r * _;
+            float thickness = lerp(_ThinFilmMiddleThicknessMin,_ThinFilmMiddleThicknessMax,thickness_value); //nm
+
+            matParam.middle_thickness = thickness;
+            matParam.middle_ior = _ThinFilmMiddleIOR;
+            matParam.top_ior = 1.0;
+
+            float3 dietric_ior = 1.5;
+            float3 dietric_kappa = 0.0;
+
+            float3 edge_tint = 1.0;
+            float3 metallic_ior = colorToIOR(matParam.basecolor,edge_tint);
+            float3 metallic_ior = colorToKappa(matParam.basecolor,metallic_ior);
+
+            matParam.bottom_ior = lerp(dietric_ior,metallic_ior,matParam.metallic); 
+            matParam.bottom_kappa = lerp(dietric_kappa,metallic_kappa,matParam.metallic);
         #endif 
     }
 

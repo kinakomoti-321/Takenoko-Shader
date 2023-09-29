@@ -42,11 +42,12 @@
 
         _EmissionColor("Color", Color) = (0,0,0)
         _EmissionMap("Emission", 2D) = "white" {}
-        
-        _ThinfilmTintColor("Thinfilm Tint Color", Color) = (1,1,1,1)
-        _ThinfilmThicknessMinMax("Thinfilm Thickness MinMax", Vector) = (0.0,1000.0,0.0,0.0)
-        _ThinfilmThickness("Thinfilm Thickness", Range(0,1)) = 0.5
-        _ThinfilmThicknessMap("Thinfilm Thickness Texture", 2D) = "white" {}
+
+        _ThinFilmMiddleIOR("Middle Layer IOR", Range(1.0, 3.0)) = 1.5
+        _ThinFilmMiddleThickness("Middle Layer Thickness", Range(0.0, 1.0)) = 0.5
+        _ThinFilmMiddleThicknessMin("Middle Layer Thickness Minimum(nm)",Float) = 0.0
+        _ThinFilmMiddleThicknessMax("Middle Layer Thickness Maximum(nm)",Float) = 1000.0
+        _ThinFilmMiddleThicknessMap("Middle Layer Thickness Map", 2D) = "white" {}
 
         [HideInInspector] _SrcBlend ("__src", Float) = 1.0
         [HideInInspector] _DstBlend ("__dst", Float) = 0.0
