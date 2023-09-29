@@ -1,9 +1,9 @@
-#ifndef TK_STANDARD_FORWARD_BASE
-    #define TK_STANDARD_FORWARD_BASE
+#ifndef TK_STANDARD_ADD
+    #define TK_STANDRD_ADD
     #pragma target 3.0
     #pragma multi_compile_instancing
     #pragma multi_compile_fog
-    #pragma multi_compile_fwdbase
+    #pragma multi_compile_add
     #include "UnityShaderVariables.cginc"
     #include "UnityShaderUtilities.cginc"
 
@@ -80,7 +80,7 @@
         UNITY_VERTEX_OUTPUT_STEREO
     };
 
-    TKStandardVertexOutput VertTKStandardForwardBase (TKStandardVertexInput v)
+    TKStandardVertexOutput VertTKStandardAdd (TKStandardVertexInput v)
     {
         TKStandardVertexOutput o;
 
@@ -147,7 +147,7 @@
         #endif 
     }
 
-    fixed4 FragTKStandardForwardBase(TKStandardVertexOutput i) : SV_Target
+    fixed4 FragTKStandardAdd(TKStandardVertexOutput i) : SV_Target
     {
         float3 shade_color = 0;
 
@@ -164,7 +164,16 @@
         MaterialParameter matParam;
         SetMaterialParameterTK(matParam,i.uv);
 
-        float3 lightDir = _WorldSpaceLightPos0.xyz;
+        float3 lightDir;
+        if(_WorldSpaceLightPos0.w > 0.0){
+            lightDir = _WorldSpaceLightPos0.xyz - i.worldPos.xyz;
+        } 
+        else {
+            lightDir = _WorldSpaceLightPos0.xyz;
+        }
+
+        lightDir = normalize(lightDir);
+
         UNITY_LIGHT_ATTENUATION(atten,i,worldPos)
 
         UnityGI gi;
@@ -181,67 +190,12 @@
         giInput.worldViewDir = viewDirection;
         giInput.atten = atten;
 
-        #if defined(LIGHTMAP_ON) || defined(DYNAMICLIGHTMAP_ON)
-            giInput.lightmapUV = i.lightmapUV;
-        #else
-            giInput.lightmapUV = 0.0;
-        #endif
+        float3 diffuse;
+        float3 specular;
+        EvaluateBSDF_TK(diffuse,specular,normalWorld,giInput,matParam);
 
-        #if UNITY_SHOULD_SAMPLE_SH && !UNITY_SAMPLE_FULL_SH_PER_PIXEL
-            giInput.ambient = 0.0; //Vertex SH
-        #else
-            giInput.ambient.rgb = 0.0;
-        #endif
-
-        giInput.probeHDR[0] = unity_SpecCube0_HDR;
-        giInput.probeHDR[1] = unity_SpecCube1_HDR;
-
-        #if defined(UNITY_SPECCUBE_BLENDING) || defined(UNITY_SPECCUBE_BOX_PROJECTION)
-            giInput.boxMin[0] = unity_SpecCube0_BoxMin;
-        #endif
-
-        #ifdef UNITY_SPECCUBE_BOX_PROJECTION
-            giInput.boxMax[0] = unity_SpecCube0_BoxMax;
-            giInput.probePosition[0] = unity_SpecCube0_ProbePosition;
-            giInput.boxMax[1] = unity_SpecCube1_BoxMax;
-            giInput.boxMin[1] = unity_SpecCube1_BoxMin;
-            giInput.probePosition[1] = unity_SpecCube1_ProbePosition;
-        #endif
-
-        float3 main_diffuse;
-        float3 main_specular;
-        EvaluateLighting_TK(main_diffuse,main_specular,normalWorld,giInput,matParam);
-
-        #ifdef LIGHTMAP_ON
-            float3 lightmapDiffuse = 0;
-            float3 lightmapSpecular = 0;
-            sample_lightmap(lightmapDiffuse,lightmapSpecular,normalWorld,i.lightmapUV,viewDirection,matParam);
-            lightmapDiffuse *= matParam.basecolor;
-
-            float specular_occulusion = 1.0f;
-
-            #ifdef _SPECULAR_OCCLUSION
-                specular_occulusion = saturate(colorToLuminance(lightmapDiffuse));
-            #endif
-            
-            shade_color = (lightmapDiffuse + main_diffuse) * (1.0f - matParam.metallic) +(main_specular + lightmapSpecular) * specular_occulusion;
-
-        #else
-
-            float3 sh = ShadeSH9(float4(normalWorld,1.0)) * matParam.basecolor;
-
-            shade_color = (main_diffuse + sh) * (1.0f - matParam.metallic) + main_specular;
-            shade_color += matParam.emission;
-        #endif
-
-        // #if defined(_TK_THINFILM_ON)
-        //     shade_color = fresnel_airy(dot(viewDirection,normalWorld),matParam.bottom_ior,matParam.bottom_kappa,
-        //     matParam.middle_thickness,matParam.top_ior,matParam.middle_ior);
-
-        
-        // #endif
+        shade_color = diffuse * (1.0 - matParam.metallic) + specular;
 
         return fixed4(shade_color,1.0);
     }
-
 #endif

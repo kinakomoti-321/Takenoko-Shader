@@ -92,6 +92,34 @@
         }
 
         Pass {
+            Name "ForwardAdd"
+            Tags {
+                "LightMode" = "ForwardAdd" 
+            }
+            Blend One One
+            ZWrite Off
+            CGPROGRAM
+
+            #pragma vertex VertTKStandardAdd
+            #pragma fragment FragTKStandardAdd
+            #pragma multi_compile_local _LIGHTMAPMODE_NONE _LIGHTMAPMODE_SH _LIGHTMAPMODE_MONOSH
+
+            #pragma shader_feature_local _TK_THINFILM_ON
+            #pragma shader_feature_local _TK_THINFILM_USE_MAP
+
+            #pragma shader_feature_local _SHMODE_NONLINER
+            #pragma shader_feature_local _SPECULAR_OCCLUSION
+            #pragma shader_feature_local _SH_SPECULAR
+
+            #pragma shader_feature _NORMALMAP_ON
+
+            #include "UnityCG.cginc"
+            #include "TakenokoStandardAdd.cginc"
+            
+            ENDCG
+        }
+
+        Pass {
             Name "ShadowCaster"
             Tags { "LightMode" = "ShadowCaster" }
 
