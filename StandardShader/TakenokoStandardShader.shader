@@ -74,8 +74,8 @@
             #pragma fragment FragTKStandardForwardBase
             #pragma multi_compile_local _LIGHTMAPMODE_NONE _LIGHTMAPMODE_SH _LIGHTMAPMODE_MONOSH
 
-            #pragma shader_feature_local _THINFILM_ON
-            #pragma shader_feature_local _THINFILM_USE_MAP
+            #pragma shader_feature_local _TK_THINFILM_ON
+            #pragma shader_feature_local _TK_THINFILM_USE_MAP
 
             #pragma shader_feature_local _SHMODE_NONLINER
             #pragma shader_feature_local _SPECULAR_OCCLUSION

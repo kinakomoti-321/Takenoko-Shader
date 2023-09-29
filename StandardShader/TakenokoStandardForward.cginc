@@ -106,6 +106,11 @@
         matParam.metallic = _Metallic * tex2D(_MetallicGlossMap, uv).r;
         matParam.roughness = _Roughness * tex2D(_RoughnessMap, uv).r;
         matParam.emission = _EmissionColor * tex2D(_EmissionMap, uv).rgb;
+
+        //ThinFilm Parametor
+        #if defined(_TK_THINFILM_ON)
+            
+        #endif 
     }
 
     fixed4 FragTKStandardForwardBase(TKStandardVertexOutput i) : SV_Target
@@ -181,14 +186,11 @@
             sample_lightmap(lightmapDiffuse,lightmapSpecular,normalWorld,i.lightmapUV,viewDirection,matParam);
             lightmapDiffuse *= matParam.basecolor;
 
-            // float3 lighting_specular = 0.0f;
-            // EvaluateLightingSpecular_TK(lighting_specular,normalWorld,giInput,matParam);
-            
             float specular_occulusion = 1.0f;
 
-            // #ifdef _SPECULAR_OCCLUSION
-            //     specular_occulusion = saturate(colorToLuminance(lightmapDiffuse));
-            // #endif
+            #ifdef _SPECULAR_OCCLUSION
+                specular_occulusion = saturate(colorToLuminance(lightmapDiffuse));
+            #endif
             
             shade_color = (lightmapDiffuse + main_diffuse) * (1.0f - matParam.metallic) +(main_specular + lightmapSpecular) * specular_occulusion;
 

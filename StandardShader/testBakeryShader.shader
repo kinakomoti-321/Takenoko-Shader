@@ -228,7 +228,7 @@ Shader "Takenoko/StandardShadertest"
                     //     specular_occulusion = saturate(colorToLuminance(lightmapDiffuse));
                     // #endif
                     shade_color = lightmapDiffuse * (1.0f - matParam.metallic) + (lighting_specular + lightmapSpecular) * specular_occulusion;
-                    shade_color = lightmapSpecular; ShlickFresnelF0 * 
+                    shade_color = lightmapSpecular; 
                     //shade_color = lighting_specular;
                     shade_color = lightmapDiffuse;
 

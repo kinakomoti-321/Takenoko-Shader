@@ -2,6 +2,7 @@
     #define TK_STANDARD_BSDF
     
     #include "UnityStandardBRDF.cginc"
+    #include "ThinFilm.cginc"
     #include "../common/constant.cginc"
 
     #define HILIGHT_SPECULAR_MAX 65504f
@@ -13,6 +14,13 @@
         float metallic;
         float3 emission;
 
+        #if defined(_TK_THINFILM_ON)
+            float top_ior;
+            float middle_ior;
+            float middle_thickness;
+            float3 bottom_ior;
+            float3 bottom_kappa;
+        #endif 
     };
 
     // Define
@@ -101,6 +109,16 @@
 
         return SpecularColor * AB.x + AB.y;
     }
+
+    static inline float3 CalculateF0_TK(MaterialParameter matParam,float cosTheta){
+        #if !defined(_TK_THINFILM_ON)
+            //Disney BRDF
+            return lerp(0.08f,matParam.basecolor,matParam.metallic);
+        #else 
+            return fresnel_airy(cosTheta,matParam.bottom_ior,matParam.bottom_kappa,matParam.middle_thickness,matParam.top_ior,matParam.middle_ior);
+        #endif
+    }
+
     inline void EvaluateBSDF_TK(
     inout float3 diffuse,inout float3 specular,float3 normalWorld,UnityGIInput giInput,MaterialParameter matParam)
     {
@@ -117,7 +135,7 @@
 
         float3 disneyDif = max(DisneyDiffuse(ldoth,vdotn,ldotn,matParam.basecolor,matParam.roughness) * ldotn * lightEmission,0.0f);
 
-        float3 F0 = lerp(0.04f,matParam.basecolor,matParam.metallic);
+        float3 F0 = CalculateF0_TK(matParam,ldoth);
         float3 ggx_specular = max(SpecularGGX(ldoth,hdotn,vdotn,ldotn,matParam.roughness,F0) * ldotn * lightEmission,0.0f);
 
 
@@ -141,7 +159,7 @@
         float hdotn = saturate(dot(halfVector, normalWorld));  
         float ldoth = saturate(dot(halfVector, lightDirection));
 
-        float3 F0 = lerp(0.04f,matParam.basecolor,matParam.metallic);
+        float3 F0 = CalculateF0_TK(matParam,ldoth);
         float3 ggx_specular = max(SpecularGGX(ldoth,hdotn,vdotn,ldotn,matParam.roughness,F0) * ldotn * lightEmission,0.0f);
 
         specular = ggx_specular;
@@ -165,7 +183,7 @@
 
         float3 envSpecCombine = lerp(envSpec1,envSpec0,giInput.boxMin[0].w);
 
-        float3 F0 = lerp(0.08,matParam.basecolor,matParam.metallic);
+        float3 F0 = CalculateF0_TK(matParam,ndotv);
 
         float3 envBRDF = envSpecCombine * EnvBRDFApprox(F0,matParam.roughness,ndotv);
         specular = envBRDF;
