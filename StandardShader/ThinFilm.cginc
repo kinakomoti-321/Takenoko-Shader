@@ -1,5 +1,7 @@
 #if !defined(THIN_FILM) && defined(_TK_THINFILM_ON)
     #define THIN_FILM
+    #include "../common/constant.cginc"
+    #include "../common/math.cginc"
 
     //https://github.com/AcademySoftwareFoundation/MaterialX/blob/main/libraries/pbrlib/genglsl/lib/mx_microfacet_specular.glsl
     inline void fresnel_dielectric_polarized(float cosTheta, float n, inout float Rp, inout float Rs)
@@ -61,11 +63,11 @@
     {
         float cosB = cos(atan(eta2 / eta1));    // Brewster's angle
         if (eta2 > eta1) {
-            phiP = cosTheta < cosB ? M_PI : 0.0f;
+            phiP = cosTheta < cosB ? PI : 0.0f;
             phiS = 0.0f;
             } else {
-            phiP = cosTheta < cosB ? 0.0f : M_PI;
-            phiS = M_PI;
+            phiP = cosTheta < cosB ? 0.0f : PI;
+            phiS = PI;
         }
     }
 
@@ -92,12 +94,12 @@
 
     inline float3 eval_sensitivity(float opd, float3 shift)
     {
-        float phase = 2.0*M_PI * opd;
+        float phase = 2.0*PI * opd;
         float3 val = float3(5.4856e-13, 4.4201e-13, 5.2481e-13);
         float3 pos = float3(1.6810e+06, 1.7953e+06, 2.2084e+06);
         float3 var = float3(4.3278e+09, 9.3046e+09, 6.6121e+09);
-        float3 xyz = val * sqrt(2.0*M_PI * var) * cos(pos * phase + shift) * exp(- var * phase*phase);
-        xyz.x   += 9.7470e-14 * sqrt(2.0*M_PI * 4.5282e+09) * cos(2.2399e+06 * phase + shift[0]) * exp(- 4.5282e+09 * phase*phase);
+        float3 xyz = val * sqrt(2.0*PI * var) * cos(pos * phase + shift) * exp(- var * phase*phase);
+        xyz.x   += 9.7470e-14 * sqrt(2.0*PI * 4.5282e+09) * cos(2.2399e+06 * phase + shift[0]) * exp(- 4.5282e+09 * phase*phase);
         return xyz / 1.0685e-7;
     }
 
@@ -126,7 +128,7 @@
 
         // Optical path difference
         float D = 2.0 * eta2 * d * cosTheta2;
-        float3 Dphi = 2.0 * M_PI * D / float3(580.0, 550.0, 450.0);
+        float3 Dphi = 2.0 * PI * D / float3(580.0, 550.0, 450.0);
 
         float phi21p, phi21s;
         float3 phi23p, phi23s, r123s, r123p;
@@ -135,8 +137,8 @@
         dielectric_phase_polarized(cosTheta, eta1, eta2, phi21p, phi21s);
         conductor_phase_polarized(cosTheta2, eta2, eta3, kappa3, phi23p, phi23s);
 
-        phi21p = M_PI - phi21p;
-        phi21s = M_PI - phi21s;
+        phi21p = PI - phi21p;
+        phi21s = PI - phi21s;
 
         r123p = max(0.0, sqrt(R12p*R23p));
         r123s = max(0.0, sqrt(R12s*R23s));

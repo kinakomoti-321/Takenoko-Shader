@@ -10,18 +10,23 @@
     }
 
     static inline float3 n_min(float3 r){
-        return (1.0 - r) / (1.0 + r);
+        return (1.0f - r) / (1.0f + r);
     }
     static inline float3 n_max(float3 r){
-        return (1.0 + sqrt(r)) / (1.0 - sqrt(r));
+        return (1.0f + sqrt(r)) / (1.0f - sqrt(r));
     }
-
-    static inline float3 colorToIOR(float3 baseColor,float3 edgeTint){
-        return n_min(baseColor) * edgeTint + (1.0 - edgeTint) * n_max(baseColor); 
+    static inline float3 rToIOR(float3 col,float3 tint){
+        return tint * n_min(col) + (1.0f - tint) * n_max(col);
     }
-    
-    static inline float3 colorToKappa(float3 baseColor,float3 ior){
-        float3 nr = (ior + 1.0) * (ior + 1.0) * baseColor - (ior - 1.0) * (ior - 1.0); 
-        return sqrt(nr/(1.0 - baseColor));
+    static inline float3 rToKappa(float3 col,float3 ior){
+        float3 nr = (ior + 1.0f) * (ior + 1.0f) * col - (ior - 1.0f) * (ior - 1.0f);
+        return sqrt(nr / (1.0f - col));
+    }
+    static inline float3 getR(float3 ior,float3 kappa){
+        return ((ior-1.0f) * (ior - 1.0f) + kappa * kappa) / ((ior + 1.0f) * (ior + 1.0f) + kappa * kappa);
+    }
+    static inline float3 getG(float3 ior,float3 kappa){
+        float3 r = getR(ior,kappa);
+        return (n_max(r) - ior) / (n_max(r) - n_min(r));
     }
 #endif

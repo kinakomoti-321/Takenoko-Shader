@@ -22,9 +22,10 @@ public class TakenokoStandardGUI : ShaderGUI
 
     private String emissionEnableKey = "EmissionEnable";
 
+    private String thinfilmEnableKey = "ThinfilmEnable";
+
     private String specularOcclusionKey_ = "SpecularOcclusion";
     private String shSpecularKey_ = "SHSpecular";
-
     private String lightMapModeKey_ = "LightmapMode";
     private String shModeKey_ = "SHMode";
 
@@ -98,7 +99,7 @@ public class TakenokoStandardGUI : ShaderGUI
         thinfilmMenu_ = EditorGUI.Foldout(thinfilmFoldoutRect, thinfilmMenu_, "ThinFilm Setting", true, foldoutStyle);
         if (thinfilmMenu_)
         {
-
+            ThinFilmMenuGUI(materialEditor, targetMat, properties);
         }
 
         GUILayout.Space(10);
@@ -260,6 +261,31 @@ public class TakenokoStandardGUI : ShaderGUI
         EditorPrefs.SetBool(emissionEnableKey, emissionEnabled_);
     }
 
+    private void ThinFilmMenuGUI(MaterialEditor materialEditor, Material targetMat, MaterialProperty[] properties)
+    {
+        GUIStyle boxStyle = new GUIStyle(GUI.skin.box);
+        boxStyle.normal.background = EditorGUIUtility.Load("builtin skins/darkskin/images/cn entryback.png") as Texture2D;
+        boxStyle.normal.textColor = Color.white;
+        boxStyle.border = new RectOffset(4, 4, 4, 4);
+
+        // _ThinFilmMiddleIOR("Middle Layer IOR", Range(1.0, 3.0)) = 1.5
+        // _ThinFilmMiddleThickness("Middle Layer Thickness", Range(0.0, 1.0)) = 0.5
+        // _ThinFilmMiddleThicknessMin("Middle Layer Thickness Minimum(nm)",Float) = 0.0
+        // _ThinFilmMiddleThicknessMax("Middle Layer Thickness Maximum(nm)",Float) = 1000.0
+        // _ThinFilmMiddleThicknessMap("Middle Layer Thickness Map", 2D) = "white" {}
+
+        SetToggleShaderKeyGUI(materialEditor, targetMat, thinfilmEnableKey, "_TK_THINFILM_ON");
+
+        //Thickness
+        SetFloatSliderGUI(materialEditor, targetMat, "_ThinFilmMiddleIOR", 1.0f, 10.0f);
+        SetFloatSliderGUI(materialEditor, targetMat, "_ThinFilmMiddleThickness", 0.0f, 1.0f);
+        SetFloatSliderGUI(materialEditor, targetMat, "_ThinFilmMiddleThicknessMin", 0.0f, 1000.0f);
+        SetFloatSliderGUI(materialEditor, targetMat, "_ThinFilmMiddleThicknessMax", 0.0f, 1000.0f);
+
+        TextureGUI(materialEditor, targetMat, "_ThinFilmMiddleThicknessMap");
+        TextureScaleOffsetGUI(materialEditor, targetMat, "_ThinFilmMiddleThicknessMap");
+    }
+
     private void BakeMenuGUI(MaterialEditor materialEditor, Material targetMat, MaterialProperty[] properties)
     {
         GUIStyle boxStyle = new GUIStyle(GUI.skin.box);
@@ -366,6 +392,25 @@ public class TakenokoStandardGUI : ShaderGUI
         {
             targetMat.SetTexture(texName, texture);
         }
+    }
+
+    private void SetToggleShaderKeyGUI(MaterialEditor materialEditor, Material tergetMat, String key, String shaderKeyward)
+    {
+        bool toggle = EditorPrefs.GetBool(key, false);
+        EditorGUI.BeginChangeCheck();
+        toggle = EditorGUILayout.Toggle(shaderKeyward, toggle);
+        if (EditorGUI.EndChangeCheck())
+        {
+            if (toggle)
+            {
+                tergetMat.EnableKeyword(shaderKeyward);
+            }
+            else
+            {
+                tergetMat.DisableKeyword(shaderKeyward);
+            }
+        }
+        EditorPrefs.SetBool(key, toggle);
     }
 
     private void TextureScaleOffsetGUI(MaterialEditor materialEditor, Material targetMat, String texName)

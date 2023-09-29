@@ -21,6 +21,7 @@
             float3 bottom_ior;
             float3 bottom_kappa;
         #endif 
+
     };
 
     // Define
@@ -115,7 +116,8 @@
             //Disney BRDF
             return lerp(0.08f,matParam.basecolor,matParam.metallic);
         #else 
-            return fresnel_airy(cosTheta,matParam.bottom_ior,matParam.bottom_kappa,matParam.middle_thickness,matParam.top_ior,matParam.middle_ior);
+            return saturate(fresnel_airy(cosTheta,matParam.bottom_ior,matParam.bottom_kappa,
+            matParam.middle_thickness,matParam.top_ior,matParam.middle_ior));
         #endif
     }
 

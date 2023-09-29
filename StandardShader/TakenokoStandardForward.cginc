@@ -20,6 +20,7 @@
 
     float4 _Color;
     sampler2D _MainTex;
+    SamplerState sampler_MainTex;
     float4 _MainTex_ST;
 
     float _Roughness;
@@ -117,7 +118,7 @@
 
         //ThinFilm Parametor
         #if defined(_TK_THINFILM_ON)
-            float thickness_value = _ThinFilmMap.Sample(_MainTex,uv).r * _;
+            float thickness_value = _ThinFilmMiddleThicknessMap.Sample(sampler_MainTex,uv).r * _ThinFilmMiddleThickness;
             float thickness = lerp(_ThinFilmMiddleThicknessMin,_ThinFilmMiddleThicknessMax,thickness_value); //nm
 
             matParam.middle_thickness = thickness;
@@ -127,12 +128,22 @@
             float3 dietric_ior = 1.5;
             float3 dietric_kappa = 0.0;
 
-            float3 edge_tint = 1.0;
-            float3 metallic_ior = colorToIOR(matParam.basecolor,edge_tint);
-            float3 metallic_ior = colorToKappa(matParam.basecolor,metallic_ior);
+            float3 metal_color = clamp(matParam.basecolor.rgb,0.001,0.999); //avoid NaN
+            float3 edge_tint = ShlickFresnelF0(metal_color,0.75); //Magic Number TODO:Find better value
+            float3 metallic_ior = rToIOR(metal_color,edge_tint);
+            float3 metallic_kappa =rToKappa(metal_color,metallic_ior);
+
+            float3 metallic_color = getR(metallic_ior,metallic_kappa);
+            float3 metallic_tint = getG(metallic_ior,metallic_kappa);
+            
+            metallic_ior = rToIOR(metallic_color,metallic_tint);
+            metallic_kappa = rToKappa(metallic_color,metallic_ior);
 
             matParam.bottom_ior = lerp(dietric_ior,metallic_ior,matParam.metallic); 
             matParam.bottom_kappa = lerp(dietric_kappa,metallic_kappa,matParam.metallic);
+
+            // matParam.bottom_ior = metallic_ior;
+            // matParam.bottom_kappa = metallic_kappa;
         #endif 
     }
 
@@ -224,6 +235,13 @@
             shade_color = (main_diffuse + sh) * (1.0f - matParam.metallic) + main_specular;
             shade_color += matParam.emission;
         #endif
+
+        // #if defined(_TK_THINFILM_ON)
+        //     shade_color = fresnel_airy(dot(viewDirection,normalWorld),matParam.bottom_ior,matParam.bottom_kappa,
+        //     matParam.middle_thickness,matParam.top_ior,matParam.middle_ior);
+
+        
+        // #endif
 
         return fixed4(shade_color,1.0);
     }
