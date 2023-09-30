@@ -6,6 +6,7 @@ inline float norm2(float3 a){
     return a.x * a.x + a.y * a.y + a.z * a.z;
 }
 
+<<<<<<< HEAD
 static inline float square(float a){
     return a * a;
 }
@@ -13,6 +14,8 @@ static inline float3 square(float3 a){
     return a * a;
 }
 
+=======
+>>>>>>> origin/main
 inline float remap(float x,float a,float b,float c,float d){
     return c + (x-a)/(b-a) * (d-c);
 }
