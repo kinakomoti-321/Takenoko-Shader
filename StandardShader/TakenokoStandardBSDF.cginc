@@ -1,212 +1,267 @@
 #ifndef TK_STANDARD_BSDF
-    #define TK_STANDARD_BSDF
-    
-    #include "UnityStandardBRDF.cginc"
-    #include "TakenokoThinFilm.cginc"
-    #include "../common/constant.cginc"
+#define TK_STANDARD_BSDF
 
-    #define HILIGHT_SPECULAR_MAX 65504f
-    #define saturateHilight(x) min(x, HILIGHT_SPECULAR_MAX)
+#include "UnityStandardBRDF.cginc"
+#include "TakenokoThinFilm.cginc"
+#include "../common/constant.cginc"
+#include "../common/color.cginc"
 
-    struct MaterialParameter{
-        float3 basecolor;
-        float roughness;
-        float metallic;
-        float3 emission;
+#define HILIGHT_SPECULAR_MAX 65504f
+#define saturateHilight(x) min(x, HILIGHT_SPECULAR_MAX)
 
-        #if defined(_TK_THINFILM_ON)
-            float top_ior;
-            float middle_ior;
-            float middle_thickness;
-            float3 bottom_ior;
-            float3 bottom_kappa;
-        #endif 
+struct MaterialParameter
+{
+    float3 basecolor;
+    float roughness;
+    float metallic;
+    float3 emission;
 
+    #if defined(_TK_THINFILM_ON)
+        float top_ior;
+        float middle_ior;
+        float middle_thickness;
+        float3 bottom_ior;
+        float3 bottom_kappa;
+    #endif
+};
+
+// Define
+// struct UnityGIInput
+// {
+//     UnityLight light; // pixel light, sent from the engine
+
+//     float3 worldPos;
+//     half3 worldViewDir;
+//     half atten;
+//     half3 ambient;
+
+//     // interpolated lightmap UVs are passed as full float precision data to fragment shaders
+//     // so lightmapUV (which is used as a tmp inside of lightmap fragment shaders) should
+//     // also be full float precision to avoid data loss before sampling a texture.
+//     float4 lightmapUV; // .xy = static lightmap UV, .zw = dynamic lightmap UV
+
+//     #if defined(UNITY_SPECCUBE_BLENDING) || defined(UNITY_SPECCUBE_BOX_PROJECTION) || defined(UNITY_ENABLE_REFLECTION_BUFFERS)
+//         float4 boxMin[2];
+//     #endif
+//     #ifdef UNITY_SPECCUBE_BOX_PROJECTION
+//         float4 boxMax[2];
+//         float4 probePosition[2];
+//     #endif
+//     // HDR cubemap properties, use to decompress HDR texture
+//     float4 probeHDR[2];
+// };
+
+//struct UnityLight
+// {
+//     half3 color;
+//     half3 dir;
+//     half  ndotl; // Deprecated: Ndotl is now calculated on the fly and is no longer stored. Do not used it.
+// };
+
+static inline float3 ShlickFresnelF0(float3 F0, float wdotn)
+{
+    float term1 = 1.0f - wdotn;
+    return F0 + (1.0f - F0) * term1 * term1 * term1 * term1 * term1;
+}
+
+static inline float3 ShlickFresnelF90(float3 F90, float wdotn)
+{
+    float term1 = 1.0f - wdotn;
+    return 1.0f + (F90 - 1.0f) * term1 * term1 * term1 * term1 * term1;
+}
+
+//Normal Distribution GGX
+static inline float GGX_D(float hdotn, float roughness)
+{
+    float alpha = hdotn * roughness;
+    float term = roughness / (1.0f - hdotn * hdotn + alpha * alpha);
+    return term * term * INVPI;
+}
+
+//Visible term
+static inline float GGX_V2_Heightcorrelated(float vdotn, float ldotn, float roughness)
+{
+    float alpha2 = roughness * roughness;
+    float VisibleV = ldotn * sqrt(vdotn * vdotn * (1.0f - alpha2) + alpha2);
+    float VisibleL = vdotn * sqrt(ldotn * ldotn * (1.0f - alpha2) + alpha2);
+    return 0.5 / (VisibleV + VisibleL);
+}
+
+
+inline float3 SpecularGGX(float ldoth, float hdotn, float vdotn, float ldotn, float roughness, float3 F0)
+{
+    float D = GGX_D(hdotn, roughness);
+    float V = GGX_V2_Heightcorrelated(vdotn, ldotn, roughness);
+    float3 F = ShlickFresnelF0(F0, ldoth);
+    return D * V * F;
+}
+
+inline float3 DisneyDiffuse(float ldoth, float vdotn, float ldotn, float3 basecolor, float roughness)
+{
+    float Fd90 = 0.5 + 2.0 * ldoth * ldoth * roughness;
+    float FdView = ShlickFresnelF90(Fd90, vdotn);
+    float FdLight = ShlickFresnelF90(Fd90, ldotn);
+    return basecolor * FdView * FdLight * INVPI;
+}
+
+//https://www.unrealengine.com/ja/blog/physically-based-shading-on-mobile
+inline float3 EnvBRDFApprox(float3 SpecularColor, float Roughness, float3 NoV)
+{
+    const half4 c0 = {
+        - 1, -0.0275, -0.572, 0.022
+    };
+    const half4 c1 = {
+        1, 0.0425, 1.04, -0.04
     };
 
-    // Define
-    // struct UnityGIInput
-    // {
-        //     UnityLight light; // pixel light, sent from the engine
+    half4 r = Roughness * c0 + c1;
 
-        //     float3 worldPos;
-        //     half3 worldViewDir;
-        //     half atten;
-        //     half3 ambient;
+    half a004 = min(r.x * r.x, exp2(-9.28 * NoV)) * r.x + r.y;
 
-        //     // interpolated lightmap UVs are passed as full float precision data to fragment shaders
-        //     // so lightmapUV (which is used as a tmp inside of lightmap fragment shaders) should
-        //     // also be full float precision to avoid data loss before sampling a texture.
-        //     float4 lightmapUV; // .xy = static lightmap UV, .zw = dynamic lightmap UV
+    half2 AB = half2(-1.04, 1.04) * a004 + r.zw;
 
-        //     #if defined(UNITY_SPECCUBE_BLENDING) || defined(UNITY_SPECCUBE_BOX_PROJECTION) || defined(UNITY_ENABLE_REFLECTION_BUFFERS)
-        //         float4 boxMin[2];
-        //     #endif
-        //     #ifdef UNITY_SPECCUBE_BOX_PROJECTION
-        //         float4 boxMax[2];
-        //         float4 probePosition[2];
-        //     #endif
-        //     // HDR cubemap properties, use to decompress HDR texture
-        //     float4 probeHDR[2];
-    // };
+    return SpecularColor * AB.x + AB.y;
+}
 
-    //struct UnityLight
-    // {
-        //     half3 color;
-        //     half3 dir;
-        //     half  ndotl; // Deprecated: Ndotl is now calculated on the fly and is no longer stored. Do not used it.
-    // };
+static inline float3 CalculateF0_TK(MaterialParameter matParam, float cosTheta)
+{
+    #if !defined(_TK_THINFILM_ON)
+        //Disney BRDF
+        return lerp(0.08f, matParam.basecolor, matParam.metallic);
+    #else
+        return saturate(fresnel_airy(cosTheta, matParam.bottom_ior, matParam.bottom_kappa,
+        matParam.middle_thickness, matParam.top_ior, matParam.middle_ior));
+    #endif
+}
+
+inline void EvaluateBSDF_TK(
+    inout float3 diffuse, inout float3 specular, float3 normalWorld, UnityGIInput giInput, MaterialParameter matParam)
+{
+    float3 lightDirection = giInput.light.dir;
+    float3 viewDirection = giInput.worldViewDir;
+    float3 lightEmission = giInput.light.color * giInput.atten;
+
+    float3 halfVector = Unity_SafeNormalize(lightDirection + viewDirection);
+
+    float vdotn = saturate(dot(viewDirection, normalWorld));
+    float ldotn = saturate(dot(lightDirection, normalWorld));
+    float hdotn = saturate(dot(halfVector, normalWorld));
+    float ldoth = saturate(dot(halfVector, lightDirection));
+
+    float3 disneyDif = max(DisneyDiffuse(ldoth, vdotn, ldotn, matParam.basecolor, matParam.roughness) * ldotn * lightEmission, 0.0f);
+
+    float3 F0 = CalculateF0_TK(matParam, ldoth);
+
+    float3 ggx_specular = max(SpecularGGX(ldoth, hdotn, vdotn, ldotn, matParam.roughness, F0) * ldotn * lightEmission, 0.0f);
+
+
+    diffuse = disneyDif;
+    specular = ggx_specular;
+
+    //Unity Correction PI
+    diffuse *= PI;
+    specular *= PI;
+}
+
+inline void EvaluateSpecularBSDF_TK(inout float3 specular, float3 normalWorld,
+float3 viewDirection, MaterialParameter matParam, float3 lightDirection, float3 lightColor, float ligthAtten)
+{
+
+    float3 lightEmission = lightColor * ligthAtten;
+
+    float3 halfVector = Unity_SafeNormalize(lightDirection + viewDirection);
+
+    float vdotn = saturate(dot(viewDirection, normalWorld));
+    float ldotn = saturate(dot(lightDirection, normalWorld));
+    float hdotn = saturate(dot(halfVector, normalWorld));
+    float ldoth = saturate(dot(halfVector, lightDirection));
+
+    float3 F0 = CalculateF0_TK(matParam, ldoth);
+    float3 ggx_specular = max(SpecularGGX(ldoth, hdotn, vdotn, ldotn, matParam.roughness, F0) * ldotn * lightEmission, 0.0f);
+
+    specular = ggx_specular;
+
+    //Unity Correction PI
+    specular *= PI;
+}
+
+inline void EvaluateSpecularGI_TK(inout float3 specular, float3 normalWorld,
+UnityGIInput giInput, MaterialParameter matParam)
+{
+    float3 refDir = reflect(-giInput.worldViewDir, normalWorld);
+    float ndotv = saturate(dot(normalWorld, giInput.worldViewDir));
+
+    float perceptualRoughness = matParam.roughness * (1.7 - 0.7 * matParam.roughness);
     
-    static inline float3 ShlickFresnelF0(float3 F0,float wdotn){
-        float term1 = 1.0f - wdotn;
-        return F0 + (1.0f - F0) * term1 * term1 * term1 * term1 * term1;
-    }
+    float miplevel = perceptualRoughnessToMipmapLevel(perceptualRoughness);
+    half4 envRefProbe0 = UNITY_SAMPLE_TEXCUBE_LOD(unity_SpecCube0, refDir, miplevel);
+    float3 envSpec0 = DecodeHDR(envRefProbe0, giInput.probeHDR[0]);
+    half4 envRefProbe1 = UNITY_SAMPLE_TEXCUBE_SAMPLER_LOD(unity_SpecCube1, unity_SpecCube0, refDir, miplevel);
+    float3 envSpec1 = DecodeHDR(envRefProbe1, giInput.probeHDR[1]);
 
-    static inline float3 ShlickFresnelF90(float3 F90,float wdotn){
-        float term1 = 1.0f - wdotn;
-        return 1.0f + (F90 - 1.0f) * term1 * term1 * term1 * term1 * term1;
-    }
+    float3 envSpecCombine = lerp(envSpec1, envSpec0, giInput.boxMin[0].w);
 
-    //Normal Distribution GGX
-    static inline float GGX_D(float hdotn,float roughness){
-        float alpha = hdotn * roughness;
-        float term = roughness / (1.0f - hdotn * hdotn + alpha * alpha);
-        return term * term * INVPI;
-    }
+    float3 F0 = CalculateF0_TK(matParam, ndotv);
 
-    //Visible term
-    static inline float GGX_V2_Heightcorrelated(float vdotn, float ldotn,float roughness){
-        float alpha2 = roughness * roughness;
-        float VisibleV = ldotn * sqrt(vdotn * vdotn * (1.0f - alpha2) + alpha2);    
-        float VisibleL = vdotn * sqrt(ldotn * ldotn * (1.0f - alpha2) + alpha2);
-        return 0.5 / (VisibleV + VisibleL);
-    }
+    float3 envBRDF = envSpecCombine * EnvBRDFApprox(F0, matParam.roughness, ndotv);
+    specular = envBRDF;
+}
 
+inline void EvaluateLighting_TK(inout float3 diffuse, inout float3 specular, float3 normalWorld,
+UnityGIInput giInput, MaterialParameter matParam)
+{
+    EvaluateBSDF_TK(diffuse, specular, normalWorld, giInput, matParam);
+    float3 specularGI = 0.0f;
+    EvaluateSpecularGI_TK(specularGI, normalWorld, giInput, matParam);
+    specular += specularGI;
+}
 
-    inline float3 SpecularGGX(float ldoth,float hdotn,float vdotn,float ldotn,float roughness,float3 F0){
-        float D = GGX_D(hdotn,roughness);
-        float V = GGX_V2_Heightcorrelated(vdotn,ldotn,roughness);
-        float3 F = ShlickFresnelF0(F0,ldoth);
-        return D * V * F;
-    }
+inline void EvaluateLightingSpecular_TK(inout float3 specular, float3 normalWorld,
+UnityGIInput giInput, MaterialParameter matParam)
+{
+    EvaluateSpecularBSDF_TK(specular, normalWorld, giInput.worldViewDir, matParam, giInput.light.dir, giInput.light.color, giInput.atten);
+    float3 specularGI = 0.0f;
+    EvaluateSpecularGI_TK(specularGI, normalWorld, giInput, matParam);
+    specular += specularGI;
+}
+
+void SetMaterialParameterTK(inout MaterialParameter matParam, float2 uv)
+{
+    matParam.basecolor = _Color * tex2D(_MainTex, uv).rgb;
+    matParam.metallic = _Metallic * tex2D(_MetallicGlossMap, uv).r;
     
-    inline float3 DisneyDiffuse(float ldoth,float vdotn,float ldotn,float3 basecolor,float roughness){
-        float Fd90 = 0.5 + 2.0 * ldoth * ldoth * roughness;
-        float FdView = ShlickFresnelF90(Fd90,vdotn);
-        float FdLight = ShlickFresnelF90(Fd90,ldotn);
-        return basecolor * FdView * FdLight * INVPI;
-    }
+    float roughness = _Roughness * tex2D(_RoughnessMap, uv).r;
+    matParam.roughness = clamp(roughness * roughness, 0.001, 1.0);
+    matParam.emission = _EmissionColor * tex2D(_EmissionMap, uv).rgb;
 
-    //https://www.unrealengine.com/ja/blog/physically-based-shading-on-mobile
-    inline float3 EnvBRDFApprox(float3 SpecularColor,float Roughness,float3 NoV){
-        const half4 c0 = { -1, -0.0275, -0.572, 0.022 };
-        const half4 c1 = { 1, 0.0425, 1.04, -0.04 };
+    //ThinFilm Parametor
+    #if defined(_TK_THINFILM_ON)
+        float thickness_value = _ThinFilmMiddleThicknessMap.Sample(sampler_MainTex, uv).r * _ThinFilmMiddleThickness;
+        float thickness = lerp(_ThinFilmMiddleThicknessMin, _ThinFilmMiddleThicknessMax, thickness_value); //nm
 
-        half4 r = Roughness * c0 + c1;
+        matParam.middle_thickness = thickness;
+        matParam.middle_ior = _ThinFilmMiddleIOR;
+        matParam.top_ior = 1.0;
 
-        half a004 = min( r.x * r.x, exp2( -9.28 * NoV ) ) * r.x + r.y;
+        float3 dietric_ior = 1.5;
+        float3 dietric_kappa = 0.0;
 
-        half2 AB = half2( -1.04, 1.04 ) * a004 + r.zw;
+        float3 metal_color = clamp(matParam.basecolor.rgb, 0.001, 0.999); //avoid NaN
+        float3 edge_tint = ShlickFresnelF0(metal_color, 0.75); //Magic Number TODO:Find better value
+        float3 metallic_ior = rToIOR(metal_color, edge_tint);
+        float3 metallic_kappa = rToKappa(metal_color, metallic_ior);
 
-        return SpecularColor * AB.x + AB.y;
-    }
-
-    static inline float3 CalculateF0_TK(MaterialParameter matParam,float cosTheta){
-        #if !defined(_TK_THINFILM_ON)
-            //Disney BRDF
-            return lerp(0.08f,matParam.basecolor,matParam.metallic);
-        #else 
-            return saturate(fresnel_airy(cosTheta,matParam.bottom_ior,matParam.bottom_kappa,
-            matParam.middle_thickness,matParam.top_ior,matParam.middle_ior));
-        #endif
-    }
-
-    inline void EvaluateBSDF_TK(
-    inout float3 diffuse,inout float3 specular,float3 normalWorld,UnityGIInput giInput,MaterialParameter matParam)
-    {
-        float3 lightDirection = giInput.light.dir;
-        float3 viewDirection = giInput.worldViewDir;
-        float3 lightEmission = giInput.light.color * giInput.atten;
-
-        float3 halfVector = Unity_SafeNormalize(lightDirection + viewDirection);
-
-        float vdotn = saturate(dot(viewDirection, normalWorld));
-        float ldotn = saturate(dot(lightDirection, normalWorld));
-        float hdotn = saturate(dot(halfVector, normalWorld));  
-        float ldoth = saturate(dot(halfVector, lightDirection));
-
-        float3 disneyDif = max(DisneyDiffuse(ldoth,vdotn,ldotn,matParam.basecolor,matParam.roughness) * ldotn * lightEmission,0.0f);
-
-        float3 F0 = CalculateF0_TK(matParam,ldoth);
-
-        float3 ggx_specular = max(SpecularGGX(ldoth,hdotn,vdotn,ldotn,matParam.roughness,F0) * ldotn * lightEmission,0.0f);
-
-
-        diffuse = disneyDif;
-        specular = ggx_specular; 
-
-        //Unity Correction PI
-        diffuse *= PI;
-        specular *= PI;
-    } 
-
-    inline void EvaluateSpecularBSDF_TK(inout float3 specular,float3 normalWorld,
-    float3 viewDirection,MaterialParameter matParam,float3 lightDirection,float3 lightColor,float ligthAtten){
-
-        float3 lightEmission = lightColor * ligthAtten;
-
-        float3 halfVector = Unity_SafeNormalize(lightDirection + viewDirection);
-
-        float vdotn = saturate(dot(viewDirection, normalWorld));
-        float ldotn = saturate(dot(lightDirection, normalWorld));
-        float hdotn = saturate(dot(halfVector, normalWorld));  
-        float ldoth = saturate(dot(halfVector, lightDirection));
-
-        float3 F0 = CalculateF0_TK(matParam,ldoth);
-        float3 ggx_specular = max(SpecularGGX(ldoth,hdotn,vdotn,ldotn,matParam.roughness,F0) * ldotn * lightEmission,0.0f);
-
-        specular = ggx_specular;
-
-        //Unity Correction PI
-        specular *= PI;
-    }
-
-    inline void EvaluateSpecularGI_TK(inout float3 specular,float3 normalWorld,
-    UnityGIInput giInput,MaterialParameter matParam){
-        float3 refDir = reflect(-giInput.worldViewDir,normalWorld);
-        float ndotv = saturate(dot(normalWorld,giInput.worldViewDir));
-
-        float perceptualRoughness = matParam.roughness * (1.7 - 0.7 * matParam.roughness);
+        float3 metallic_color = getR(metallic_ior, metallic_kappa);
+        float3 metallic_tint = getG(metallic_ior, metallic_kappa);
         
-        float miplevel = perceptualRoughnessToMipmapLevel(perceptualRoughness);
-        half4 envRefProbe0 = UNITY_SAMPLE_TEXCUBE_LOD(unity_SpecCube0, refDir, miplevel);
-        float3 envSpec0 = DecodeHDR(envRefProbe0,giInput.probeHDR[0]);
-        half4 envRefProbe1 = UNITY_SAMPLE_TEXCUBE_SAMPLER_LOD(unity_SpecCube1,unity_SpecCube0, refDir, miplevel);
-        float3 envSpec1 = DecodeHDR(envRefProbe1,giInput.probeHDR[1]);
+        metallic_ior = rToIOR(metallic_color, metallic_tint);
+        metallic_kappa = rToKappa(metallic_color, metallic_ior);
 
-        float3 envSpecCombine = lerp(envSpec1,envSpec0,giInput.boxMin[0].w);
+        matParam.bottom_ior = lerp(dietric_ior, metallic_ior, matParam.metallic);
+        matParam.bottom_kappa = lerp(dietric_kappa, metallic_kappa, matParam.metallic);
 
-        float3 F0 = CalculateF0_TK(matParam,ndotv);
-
-        float3 envBRDF = envSpecCombine * EnvBRDFApprox(F0,matParam.roughness,ndotv);
-        specular = envBRDF;
-    }
-
-    inline void EvaluateLighting_TK(inout float3 diffuse,inout float3 specular,float3 normalWorld,
-    UnityGIInput giInput,MaterialParameter matParam){
-        EvaluateBSDF_TK(diffuse,specular,normalWorld,giInput,matParam);
-        float3 specularGI = 0.0f;
-        EvaluateSpecularGI_TK(specularGI,normalWorld,giInput,matParam);
-        specular += specularGI;
-    }
-
-    inline void EvaluateLightingSpecular_TK(inout float3 specular,float3 normalWorld,
-    UnityGIInput giInput,MaterialParameter matParam){
-        EvaluateSpecularBSDF_TK(specular,normalWorld,giInput.worldViewDir,matParam,giInput.light.dir,giInput.light.color,giInput.atten);
-        float3 specularGI = 0.0f;
-        EvaluateSpecularGI_TK(specularGI,normalWorld,giInput,matParam);
-        specular += specularGI;
-    }
+    #endif
+}
 
 
 
