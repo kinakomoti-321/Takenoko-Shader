@@ -2,7 +2,7 @@
     #define TK_STANDARD_BSDF
     
     #include "UnityStandardBRDF.cginc"
-    #include "ThinFilm.cginc"
+    #include "TakenokoThinFilm.cginc"
     #include "../common/constant.cginc"
 
     #define HILIGHT_SPECULAR_MAX 65504f

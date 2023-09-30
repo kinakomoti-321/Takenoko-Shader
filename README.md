@@ -1,11 +1,11 @@
 # KinakoStandard
 ## TODO
-- IBL
+- IBL //Complete
 - sheen and cross
-- SH approximate Specular
-- Specular Occlusion
-- Thin-Film
-- HexTiling
+- SH approximate Specular //Complete
+- Specular Occlusion //Progress
+- Thin-Film //Complete
+- HexTiling 
 - stochostic triplaner
 - Multiple-Scattering
 - LTC

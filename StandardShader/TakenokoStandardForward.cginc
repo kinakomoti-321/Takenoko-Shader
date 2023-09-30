@@ -15,7 +15,6 @@
     #include "../common/noise.cginc"
     #include "../common/matrix.cginc"
     #include "../common/color.cginc"
-    #include "CommonStruct.cginc"
 
 
     float4 _Color;
