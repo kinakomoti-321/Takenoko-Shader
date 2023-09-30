@@ -34,16 +34,13 @@
         _BumpScale("Scale", Float) = 1.0
         _BumpMap("Normal Map", 2D) = "bump" {}
 
-        _Parallax ("Height Scale", Range (0.005, 0.08)) = 0.02
-        _ParallaxMap ("Height Map", 2D) = "black" {}
-
-        _OcclusionStrength("Strength", Range(0.0, 1.0)) = 1.0
-        _OcclusionMap("Occlusion", 2D) = "white" {}
-
+        [Toggle(_EMISSION)] _Emission("Emission",Float) = 0.0
+        [Enum(NONE,0,REALTIME,1,BAKE,2)] _EmissionMode("Emission Mode",Int) = 0
         _EmissionColor("Color", Color) = (0,0,0)
         _EmissionMap("Emission", 2D) = "white" {}
 
-        _ThinFilmMiddleIOR("Middle Layer IOR", Range(1.0, 3.0)) = 1.5
+        [Toggle(_TK_THINFILM_ON)] _ThinFilm_ON("Thin Film",Float) = 0.0
+        _ThinFilmMiddleIOR("Middle Layer IOR", Range(1.01, 5.0)) = 1.5
         _ThinFilmMiddleThickness("Middle Layer Thickness", Range(0.0, 1.0)) = 0.5
         _ThinFilmMiddleThicknessMin("Middle Layer Thickness Minimum(nm)",Float) = 0.0
         _ThinFilmMiddleThicknessMax("Middle Layer Thickness Maximum(nm)",Float) = 1000.0
@@ -52,6 +49,11 @@
         [HideInInspector] _SrcBlend ("__src", Float) = 1.0
         [HideInInspector] _DstBlend ("__dst", Float) = 0.0
         [HideInInspector] _ZWrite ("__zw", Float) = 1.0
+
+        [Enum(NONE,0,SH,1,MONOSH,2)] _LightmapMode("Lightmap Mode",Int) = 0
+        [Toggle(_SHMODE_NONLINER)] _SHModeNonLiner("NonLiner SH",Float) = 1.0
+        [Toggle(_SPECULAR_OCCLUSION)] _SpecularOcclusion("Specular Occlusion",Float) = 0.0
+        [Toggle(_SH_SPECULAR)] _SHSpecular("SH Specular",Float) = 0.0
     }
 
     CGINCLUDE
@@ -60,7 +62,6 @@
     
     SubShader
     {
-
         Pass
         {
             Tags { 
@@ -82,8 +83,8 @@
             #pragma shader_feature_local _SPECULAR_OCCLUSION
             #pragma shader_feature_local _SH_SPECULAR
 
-
             #pragma shader_feature _NORMALMAP_ON
+            #pragma shader_feature _EMISSION
 
             #include "UnityCG.cginc"
             #include "TakenokoStandardForward.cginc"

@@ -231,9 +231,11 @@
             float3 sh = ShadeSH9(float4(normalWorld,1.0)) * matParam.basecolor;
 
             shade_color = (main_diffuse + sh) * (1.0f - matParam.metallic) + main_specular;
-            shade_color += matParam.emission;
         #endif
 
+        #if defined(_EMISSION)
+            shade_color += matParam.emission;
+        #endif
         // #if defined(_TK_THINFILM_ON)
         //     shade_color = fresnel_airy(dot(viewDirection,normalWorld),matParam.bottom_ior,matParam.bottom_kappa,
         //     matParam.middle_thickness,matParam.top_ior,matParam.middle_ior);
