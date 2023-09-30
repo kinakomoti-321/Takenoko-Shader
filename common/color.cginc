@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 #ifndef _COLOR_H
     #define _COLOR_H
     #include "./constant.cginc"
@@ -31,9 +30,3 @@
         return (n_max(r) - ior) / (n_max(r) - n_min(r));
     }
 #endif
-=======
-#include "./constant.cginc"
-float3 colorPalet(float3 a,float3 b,float3 c,float3 d,float t){
-    return a + b * cos(TAU*(c*t+d));
-}
->>>>>>> origin/main

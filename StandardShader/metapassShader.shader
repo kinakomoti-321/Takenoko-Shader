@@ -39,10 +39,6 @@
 
                 // required but no effect for EnergyConservationBetweenDiffuseAndSpecular
                 half oneMinusReflectivity = 0;
-<<<<<<< HEAD
-=======
-
->>>>>>> origin/main
                 // do it
                 half smoothness = _Glossiness;
                 half3 albedo = _Color;

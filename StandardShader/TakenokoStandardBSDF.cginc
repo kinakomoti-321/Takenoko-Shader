@@ -2,10 +2,7 @@
     #define TK_STANDARD_BSDF
     
     #include "UnityStandardBRDF.cginc"
-<<<<<<< HEAD
     #include "ThinFilm.cginc"
-=======
->>>>>>> origin/main
     #include "../common/constant.cginc"
 
     #define HILIGHT_SPECULAR_MAX 65504f
@@ -16,7 +13,6 @@
         float roughness;
         float metallic;
         float3 emission;
-<<<<<<< HEAD
 
         #if defined(_TK_THINFILM_ON)
             float top_ior;
@@ -26,8 +22,6 @@
             float3 bottom_kappa;
         #endif 
 
-=======
->>>>>>> origin/main
     };
 
     // Define
