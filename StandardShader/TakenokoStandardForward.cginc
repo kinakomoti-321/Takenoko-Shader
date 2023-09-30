@@ -10,7 +10,7 @@
     #include "AutoLight.cginc"
     #include "Lighting.cginc"
 
-    #include "Lightmap.cginc"
+    #include "TakenokoLightmap.cginc"
     #include "TakenokoStandardBSDF.cginc"
     #include "../common/noise.cginc"
     #include "../common/matrix.cginc"

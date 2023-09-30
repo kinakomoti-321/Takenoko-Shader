@@ -1,6 +1,3 @@
-// Upgrade NOTE: replaced tex2D unity_Lightmap with UNITY_SAMPLE_TEX2D
-
-// Upgrade NOTE: replaced tex2D unity_LightmapInd with UNITY_SAMPLE_TEX2D_SAMPLER
 
 #ifndef LIGHTMAP_SAMPLER
     #define LIGHTMAP_SAMPLER
