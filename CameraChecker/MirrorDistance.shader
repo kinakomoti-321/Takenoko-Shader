@@ -2,7 +2,10 @@
 {
     Properties
     {
+<<<<<<< HEAD
         
+=======
+>>>>>>> origin/main
     }
     SubShader
     {
