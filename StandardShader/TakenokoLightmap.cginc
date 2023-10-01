@@ -138,5 +138,12 @@ inline void sample_lightmap(inout float3 diffuse, inout float3 specular, float3 
     #endif
 }
 
+inline float3 lightMapEvaluate(Texture2D lightmap, float2 uv)
+{
+    return DecodeLightmap(lightmap.Sample(lightmap_trilinear_clamp_sampler, uv));
+}
+
+
+
 #endif
 

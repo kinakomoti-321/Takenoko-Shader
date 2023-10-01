@@ -5,7 +5,7 @@
     //------------------------------------
     //Properties : _TestName
     //Struct : TestName
-    //Function  
+    //Function
     //- math(static) function : testname
     //- self made function : TestName_TK()
     //- experimental function : TestName_TK_EX()
@@ -20,41 +20,58 @@
 
     Properties
     {
-        _Color("Color", Color) = (1,1,1,1)
-        _MainTex("Albedo", 2D) = "white" {}
 
-        _Cutoff("Alpha Cutoff", Range(0.0, 1.0)) = 0.5
+        [Enum(NONE, 0, TRIPLANAR, 1, BIPLANAR, 2, DITHER_TRIPLANAR, 3)] _MappingMode ("Mapping Mode", Int) = 0
+        [Enum(NONR, 0, Stochastic, 1, HEX, 2, VOLONOI, 3)] _SamplerMode ("Sampler Mode", Int) = 0
+        _Color ("Color", Color) = (1, 1, 1, 1)
+        _MainTex ("Albedo", 2D) = "white" { }
 
-        [Gamma] _Metallic("Metallic", Range(0.0, 1.0)) = 0.0
-        _MetallicGlossMap("Metallic", 2D) = "white" {}
+        _Cutoff ("Alpha Cutoff", Range(0.0, 1.0)) = 0.5
 
-        _Roughness("Roughness",Range(0.0,1.0)) = 0.0
-        _RoughnessMap("Roughness", 2D) = "white" {}
+        [Gamma] _Metallic ("Metallic", Range(0.0, 1.0)) = 0.0
+        _MetallicGlossMap ("Metallic", 2D) = "white" { }
 
-        _BumpScale("Scale", Float) = 1.0
-        _BumpMap("Normal Map", 2D) = "bump" {}
+        _Roughness ("Roughness", Range(0.0, 1.0)) = 0.0
+        _RoughnessMap ("Roughness", 2D) = "white" { }
 
-        [Toggle(_EMISSION)] _Emission("Emission",Float) = 0.0
-        [Enum(NONE,0,REALTIME,1,BAKE,2)] _EmissionMode("Emission Mode",Int) = 0
-        _EmissionColor("Color", Color) = (0,0,0)
-        _EmissionMap("Emission", 2D) = "white" {}
+        _BumpScale ("Scale", Float) = 1.0
+        _BumpMap ("Normal Map", 2D) = "bump" { }
 
-        [Toggle(_TK_THINFILM_ON)] _ThinFilm_ON("Thin Film",Float) = 0.0
-        _ThinFilmMiddleIOR("Middle Layer IOR", Range(1.01, 5.0)) = 1.5
-        _ThinFilmMiddleThickness("Middle Layer Thickness", Range(0.0, 1.0)) = 0.5
-        _ThinFilmMiddleThicknessMin("Middle Layer Thickness Minimum(nm)",Float) = 0.0
-        _ThinFilmMiddleThicknessMax("Middle Layer Thickness Maximum(nm)",Float) = 1000.0
-        _ThinFilmMiddleThicknessMap("Middle Layer Thickness Map", 2D) = "white" {}
+        [Toggle(_EMISSION)] _Emission ("Emission", Float) = 0.0
+        [Enum(NONE, 0, REALTIME, 1, BAKE, 2)] _EmissionMode ("Emission Mode", Int) = 0
+        _EmissionColor ("Color", Color) = (0, 0, 0)
+        _EmissionMap ("Emission", 2D) = "white" { }
+
+        [Toggle(_TK_THINFILM_ON)] _ThinFilm_ON ("Thin Film", Float) = 0.0
+        _ThinFilmMiddleIOR ("Middle Layer IOR", Range(1.01, 5.0)) = 1.5
+        _ThinFilmMiddleThickness ("Middle Layer Thickness", Range(0.0, 1.0)) = 0.5
+        _ThinFilmMiddleThicknessMin ("Middle Layer Thickness Minimum(nm)", Float) = 0.0
+        _ThinFilmMiddleThicknessMax ("Middle Layer Thickness Maximum(nm)", Float) = 1000.0
+        _ThinFilmMiddleThicknessMap ("Middle Layer Thickness Map", 2D) = "white" { }
 
         [HideInInspector] _SrcBlend ("__src", Float) = 1.0
         [HideInInspector] _DstBlend ("__dst", Float) = 0.0
         [HideInInspector] _ZWrite ("__zw", Float) = 1.0
 
-        [Enum(NONE,0,SH,1,MONOSH,2)] _LightmapMode("Lightmap Mode",Int) = 0
-        [Toggle(_SHMODE_NONLINER)] _SHModeNonLiner("NonLiner SH",Float) = 1.0
-        [Toggle(_SPECULAR_OCCLUSION)] _SpecularOcclusion("Specular Occlusion",Float) = 0.0
-        [Toggle(_SH_SPECULAR)] _SHSpecular("SH Specular",Float) = 0.0
+        [Enum(NONE, 0, SH, 1, MONOSH, 2)] _LightmapMode ("Lightmap Mode", Int) = 0
+        _LightmapPower ("Add Lightmap Power", Range(0.0, 1.0)) = 1.0
+        [Toggle(_SHMODE_NONLINER)] _SHModeNonLiner ("NonLiner SH", Float) = 1.0
+        [Toggle(_SPECULAR_OCCLUSION)] _SpecularOcclusion ("Specular Occlusion", Float) = 0.0
+        [Toggle(_SH_SPECULAR)] _SHSpecular ("SH Specular", Float) = 0.0
+
+        [Toggle(_ADDLIGHTMAP1_ON)] _AddLightmap1_ON ("Add Lightmap1", Float) = 0.0
+        _AddLightmap1_Power ("Add Lightmap1 Power", Range(0.0, 1.0)) = 1.0
+        _AddLightmap1 ("Add Lightmap1", 2D) = "black" { }
+
+        [Toggle(_ADDLIGHTMAP2_ON)] _AddLightmap2_ON ("Add Lightmap2", Float) = 0.0
+        _AddLightmap2_Power ("Add Lightmap2 Power", Range(0.0, 1.0)) = 1.0
+        _AddLightmap2 ("Add Lightmap2", 2D) = "black" { }
+
+        [Toggle(_ADDLIGHTMAP3_ON)] _AddLightmap3_ON ("Add Lightmap3", Float) = 0.0
+        _AddLightmap3_Power ("Add Lightmap3 Power", Range(0.0, 1.0)) = 1.0
+        _AddLightmap3 ("Add Lightmap3", 2D) = "black" { }
     }
+
 
     CGINCLUDE
     #define UNITY_SETUP_BRDF_INPUT MetallicSetup
@@ -64,10 +81,7 @@
     {
         Pass
         {
-            Tags { 
-                "LightMode"="ForwardBase"  
-                "RenderType"="Opaque" 
-            }
+            Tags { "LightMode" = "ForwardBase" "RenderType" = "Opaque" }
 
             ZWrite On
 
@@ -75,6 +89,7 @@
             #pragma vertex VertTKStandardForwardBase
             #pragma fragment FragTKStandardForwardBase
             #pragma multi_compile_local _LIGHTMAPMODE_NONE _LIGHTMAPMODE_SH _LIGHTMAPMODE_MONOSH
+            #pragma multi_compile_local _MAPPINGMODE_NONE _MAPPINGMODE_TRIPLANAR _MAPPINGMODE_BIPLANAR _MAPPINGMODE_DITHER_TRIPLANAR
 
             #pragma shader_feature_local _TK_THINFILM_ON
             #pragma shader_feature_local _TK_THINFILM_USE_MAP
@@ -86,17 +101,20 @@
             #pragma shader_feature _NORMALMAP_ON
             #pragma shader_feature _EMISSION
 
+            #pragma shader_feature _ADDLIGHTMAP1_ON
+            #pragma shader_feature _ADDLIGHTMAP2_ON
+            #pragma shader_feature _ADDLIGHTMAP3_ON
+
             #include "UnityCG.cginc"
             #include "TakenokoStandardForward.cginc"
 
             ENDCG
         }
 
-        Pass {
+        Pass
+        {
             Name "ForwardAdd"
-            Tags {
-                "LightMode" = "ForwardAdd" 
-            }
+            Tags { "LightMode" = "ForwardAdd" }
             Blend One One
             ZWrite Off
             CGPROGRAM
@@ -120,7 +138,8 @@
             ENDCG
         }
 
-        Pass {
+        Pass
+        {
             Name "ShadowCaster"
             Tags { "LightMode" = "ShadowCaster" }
 
@@ -146,7 +165,7 @@
         Pass
         {
             Name "META"
-            Tags { "LightMode"="Meta" }
+            Tags { "LightMode" = "Meta" }
 
             Cull Off
 

@@ -53,9 +53,21 @@ public class TakenokoStandardGUI : ShaderGUI
     MaterialProperty DstBlend;
     MaterialProperty ZWrite;
     MaterialProperty LightmapMode;
+    MaterialProperty LightmapPower;
     MaterialProperty SHModeNonLiner;
     MaterialProperty SpecularOcclusion;
     MaterialProperty SHSpecular;
+
+    MaterialProperty AddLightmap1_ON;
+    MaterialProperty AddLightmap1_Power;
+    MaterialProperty AddLightmap1;
+
+    MaterialProperty AddLightmap2_ON;
+    MaterialProperty AddLightmap2_Power;
+    MaterialProperty AddLightmap2;
+    MaterialProperty AddLightmap3_ON;
+    MaterialProperty AddLightmap3_Power;
+    MaterialProperty AddLightmap3;
 
     bool firstTime = true;
 
@@ -128,6 +140,7 @@ public class TakenokoStandardGUI : ShaderGUI
                 LightmapMode.floatValue = (float)lightmapFormat;
 
                 EditorGUI.indentLevel++;
+                materialEditor.ShaderProperty(LightmapPower, "Lightmap Power");
                 switch (lightmapFormat)
                 {
                     case LightmapFormatEnum.None:
@@ -143,6 +156,32 @@ public class TakenokoStandardGUI : ShaderGUI
                 }
                 EditorGUI.indentLevel--;
                 materialEditor.ShaderProperty(SpecularOcclusion, "Specular Occlusion");
+
+                materialEditor.ShaderProperty(AddLightmap1_ON, "Add Lightmap1");
+                if (AddLightmap1_ON.floatValue > 0.0)
+                {
+                    EditorGUI.indentLevel++;
+                    materialEditor.ShaderProperty(AddLightmap1_Power, "Add Lightmap1 Power");
+                    materialEditor.ShaderProperty(AddLightmap1, "Add Lightmap1");
+                    EditorGUI.indentLevel--;
+                }
+                materialEditor.ShaderProperty(AddLightmap2_ON, "Add Lightmap2");
+                if (AddLightmap2_ON.floatValue > 0.0)
+                {
+                    EditorGUI.indentLevel++;
+                    materialEditor.ShaderProperty(AddLightmap2_Power, "Add Lightmap2 Power");
+                    materialEditor.ShaderProperty(AddLightmap2, "Add Lightmap2");
+                    EditorGUI.indentLevel--;
+                }
+
+                materialEditor.ShaderProperty(AddLightmap3_ON, "Add Lightmap3");
+                if (AddLightmap3_ON.floatValue > 0.0)
+                {
+                    EditorGUI.indentLevel++;
+                    materialEditor.ShaderProperty(AddLightmap3_Power, "Add Lightmap3 Power");
+                    materialEditor.ShaderProperty(AddLightmap3, "Add Lightmap3");
+                    EditorGUI.indentLevel--;
+                }
                 GUILayout.Space(5);
             }
 
@@ -167,7 +206,6 @@ public class TakenokoStandardGUI : ShaderGUI
         RoughnessMap = FindProperty("_RoughnessMap", properties);
 
         BumpScale = FindProperty("_BumpScale", properties);
-
         BumpMap = FindProperty("_BumpMap", properties);
 
         Emission = FindProperty("_Emission", properties);
@@ -187,9 +225,22 @@ public class TakenokoStandardGUI : ShaderGUI
         ZWrite = FindProperty("_ZWrite", properties);
 
         LightmapMode = FindProperty("_LightmapMode", properties);
+        LightmapPower = FindProperty("_LightmapPower", properties);
         SHModeNonLiner = FindProperty("_SHModeNonLiner", properties);
         SpecularOcclusion = FindProperty("_SpecularOcclusion", properties);
         SHSpecular = FindProperty("_SHSpecular", properties);
+
+        AddLightmap1_ON = FindProperty("_AddLightmap1_ON", properties);
+        AddLightmap1_Power = FindProperty("_AddLightmap1_Power", properties);
+        AddLightmap1 = FindProperty("_AddLightmap1", properties);
+
+        AddLightmap2_ON = FindProperty("_AddLightmap2_ON", properties);
+        AddLightmap2_Power = FindProperty("_AddLightmap2_Power", properties);
+        AddLightmap2 = FindProperty("_AddLightmap2", properties);
+
+        AddLightmap3_ON = FindProperty("_AddLightmap3_ON", properties);
+        AddLightmap3_Power = FindProperty("_AddLightmap3_Power", properties);
+        AddLightmap3 = FindProperty("_AddLightmap3", properties);
     }
 
     void SetKeyward(Material material, String shaderKey, bool state)

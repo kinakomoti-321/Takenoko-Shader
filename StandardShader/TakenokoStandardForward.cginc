@@ -32,12 +32,27 @@ float4 _EmissionColor;
 sampler2D _EmissionMap;
 float4 _EmissionMap_ST;
 
+float _LightmapPower;
+
 #if defined(_TK_THINFILM_ON)
     float _ThinFilmMiddleIOR;
     float _ThinFilmMiddleThickness;
     float _ThinFilmMiddleThicknessMin;
     float _ThinFilmMiddleThicknessMax;
     Texture2D _ThinFilmMiddleThicknessMap;
+#endif
+
+#if defined(_ADDLIGHTMAP1_ON)
+    Texture2D _AddLightmap1;
+    float _AddLightmap1_Power;
+#endif
+#if defined(_ADDLIGHTMAP2_ON)
+    Texture2D _AddLightmap2;
+    float _AddLightmap2_Power;
+#endif
+#if defined(_ADDLIGHTMAP3_ON)
+    Texture2D _AddLightmap3;
+    float _AddLightmap3_Power;
 #endif
 
 #include "TakenokoLightmap.cginc"
@@ -182,6 +197,9 @@ fixed4 FragTKStandardForwardBase(TKStandardVertexOutput i) : SV_Target
         sample_lightmap(lightmapDiffuse, lightmapSpecular, normalWorld, i.lightmapUV, viewDirection, matParam);
         lightmapDiffuse *= matParam.basecolor;
 
+        lightmapDiffuse *= _LightmapPower;
+        lightmapSpecular *= _LightmapPower;
+
         float specular_occulusion = 1.0f;
 
         #ifdef _SPECULAR_OCCLUSION
@@ -191,21 +209,26 @@ fixed4 FragTKStandardForwardBase(TKStandardVertexOutput i) : SV_Target
         shade_color = (lightmapDiffuse + main_diffuse) * (1.0f - matParam.metallic) + (main_specular + lightmapSpecular) * specular_occulusion;
 
     #else
-
         float3 sh = ShadeSH9(float4(normalWorld, 1.0)) * matParam.basecolor;
-
         shade_color = (main_diffuse + sh) * (1.0f - matParam.metallic) + main_specular;
     #endif
 
     #if defined(_EMISSION)
         shade_color += matParam.emission;
     #endif
-    // #if defined(_TK_THINFILM_ON)
-    //     shade_color = fresnel_airy(dot(viewDirection,normalWorld),matParam.bottom_ior,matParam.bottom_kappa,
-    //     matParam.middle_thickness,matParam.top_ior,matParam.middle_ior);
 
-    
-    // #endif
+    #if defined(_ADDLIGHTMAP1_ON)
+        float3 addLightMap1 = lightMapEvaluate(_AddLightmap1, i.lightmapUV.xy);
+        shade_color += addLightMap1 * _AddLightmap1_Power;
+    #endif
+    #if defined(_ADDLIGHTMAP2_ON)
+        float3 addLightMap2 = lightMapEvaluate(_AddLightmap2, i.lightmapUV.xy);
+        shade_color += addLightMap2 * _AddLightmap2_Power;
+    #endif
+    #if defined(_ADDLIGHTMAP3_ON)
+        float3 addLightMap3 = lightMapEvaluate(_AddLightmap3, i.lightmapUV.xy);
+        shade_color += addLightMap3 * _AddLightmap3_Power;
+    #endif
 
     return fixed4(shade_color, 1.0);
 }
