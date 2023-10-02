@@ -35,7 +35,7 @@
         _RoughnessMap ("Roughness", 2D) = "white" { }
 
         _BumpScale ("Scale", Float) = 1.0
-        _BumpMap ("Normal Map", 2D) = "bump" { }
+        [Bump]_BumpMap ("Normal Map", 2D) = "bump" { }
 
         [Toggle(_EMISSION)] _Emission ("Emission", Float) = 0.0
         [Enum(None, 0, RealTime, 1, Bake, 2)] _EmissionMode ("Emission Mode", Int) = 0
@@ -70,6 +70,8 @@
         [Toggle(_ADDLIGHTMAP3_ON)] _AddLightmap3_ON ("Add Lightmap3", Float) = 0.0
         _AddLightmap3_Power ("Add Lightmap3 Power", Range(0.0, 1.0)) = 1.0
         _AddLightmap3 ("Add Lightmap3", 2D) = "black" { }
+
+        [Enum(None, 0, BaseColor, 1, Normal, 2)] _DebugMode ("Debug Mode", Int) = 0
     }
 
 
@@ -91,6 +93,8 @@
             #pragma multi_compile_local _LIGHTMAPMODE_NONE _LIGHTMAPMODE_SH _LIGHTMAPMODE_MONOSH
             #pragma multi_compile_local _MAPPINGMODE_NONE _MAPPINGMODE_TRIPLANAR _MAPPINGMODE_BIPLANAR _MAPPINGMODE_DITHER_TRIPLANAR
             #pragma multi_compile_local _SAMPLERMODE_NONE _SAMPLERMODE_STOCHASTIC _SAMPLERMODE_HEX _SAMPLERMODE_VOLONOI
+
+            #pragma multi_compile _DEBUGMODE_NONE _DEBUGMODE_BASECOLOR _DEBUGMODE_NORMAL
 
             #pragma shader_feature_local _TK_THINFILM_ON
             #pragma shader_feature_local _TK_THINFILM_USE_MAP

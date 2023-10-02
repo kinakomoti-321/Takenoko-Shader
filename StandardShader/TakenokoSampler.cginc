@@ -1,11 +1,14 @@
 #ifndef _TK_SAMPLER
 #define _TK_SAMPLER
 
+#include "../common/matrix.cginc"
 #define SAMPLE2D_TK(tex, sampler_tex, uv) tex.Sample(sampler_tex, uv)
 
 #define SAMPLE2D_GRAD_TK(tex, sampler_tex, uv, dx, dy) tex.SampleGrad(sampler_tex, uv, dx, dy)
 #define SAMPLE2D_GRAD_TK(tex, sampler_tex, uv) tex.SampleGrad(sampler_tex, uv, ddx(uv), ddy(uv))
 
+//Triplanar Mapping
+//https://web.archive.org/web/20220105142932/https://www.willpodpechan.com/blog/2020/10/16/de-tiled-triplanar-mapping-in-unity
 inline float3 TriplanarMapping_TK(Texture2D tex, SamplerState sampler_tex, float3 pos, float3 normal)
 {
     float3 blend = abs(normal);
@@ -26,6 +29,14 @@ inline float3 TriplanarMapping_TK(Texture2D tex, SamplerState sampler_tex, float
     return blend.x * texX + blend.y * texY + blend.z * texZ;
 }
 
+float3 BlendTriplanarNormal_float(float3 tangent, float3 world)
+{
+    float3 n;
+    n.xy = tangent.xy + world.xy;
+    n.z = tangent.z * world.z;
+    return n;
+}
+
 inline float3 TriplanarMappingNormal_TK(Texture2D tex, SamplerState sampler_tex, float3 pos, float3 normal)
 {
     float3 blend = abs(normal);
@@ -39,12 +50,31 @@ inline float3 TriplanarMappingNormal_TK(Texture2D tex, SamplerState sampler_tex,
     uvY = (normal.y < 0) ? - uvY + 0.5 : uvY + 0.5;
     uvZ = (normal.z < 0) ? - uvZ - 0.5 : uvZ - 0.5;
 
-    float3 texX = SAMPLE2D_GRAD_TK(tex, sampler_tex, uvX);
-    float3 texY = SAMPLE2D_GRAD_TK(tex, sampler_tex, uvY);
-    float3 texZ = SAMPLE2D_GRAD_TK(tex, sampler_tex, uvZ);
+    float3 tangentX = UnpackNormal(SAMPLE2D_GRAD_TK(tex, sampler_tex, uvX)).xyz;
+    float3 tangentY = UnpackNormal(SAMPLE2D_GRAD_TK(tex, sampler_tex, uvY)).xyz;
+    float3 tangentZ = UnpackNormal(SAMPLE2D_GRAD_TK(tex, sampler_tex, uvZ)).xyz;
 
-    return blend.x * texX + blend.y * texY + blend.z * texZ;
+    if (normal.x < 0)
+    {
+        tangentX.x = -tangentX.x;
+    }
+
+    if (normal.y < 0)
+    {
+        tangentY.x = -tangentY.x;
+    }
+    if (normal.z < 0)
+    {
+        tangentZ.x = -tangentZ.x;
+    }
+    
+    float3 worldX = BlendTriplanarNormal_float(tangentX, normal.zyx).zyx;
+    float3 worldY = BlendTriplanarNormal_float(tangentY, normal.xzy).xzy;
+    float3 worldZ = BlendTriplanarNormal_float(tangentZ, normal);
+
+    return normalize(blend.x * worldX + blend.y * worldY + blend.z * worldZ);
 }
+
 
 inline float3 BilpanarMapping_TK(Texture2D tex, SamplerState samplerState, float3 pos, float3 normal)
 {
@@ -139,8 +169,6 @@ inline float3 DitherTriplanarMapping_TK(Texture2D tex, SamplerState sampler_tex,
     return col;
 }
 
-
-
 inline float3 SAMPLE2D_MAINTEX_TK(Texture2D tex, SamplerState samplerState, float2 uv, float3 pos, float3 normal, int2 pixelId)
 {
     #if defined(_MAPPINGMODE_NONE)
@@ -156,9 +184,24 @@ inline float3 SAMPLE2D_MAINTEX_TK(Texture2D tex, SamplerState samplerState, floa
     #endif
 }
 
-// inline float3 SAMPLE2D_NORMALMAP_TK(Texture2D tex, SamplerState samplerState, float2 uv, float3 pos, float3 normal, int2 pixelId)
-// {
-
-// }
+inline float3 SAMPLE2D_NORMALMAP_TK(Texture2D tex, SamplerState samplerState, float2 uv,
+float3 pos, float3 normal, float3 worldTangent, float3 worldBinormal, int2 pixelId)
+{
+    #if defined(_MAPPINGMODE_NONE)
+        float3 texNormal = UnpackNormal(tex.Sample(samplerState, uv));
+        return localToWorld(worldTangent, normal, worldBinormal, float3(texNormal.x, texNormal.z, -texNormal.y));
+    #elif defined(_MAPPINGMODE_TRIPLANAR)
+        return TriplanarMappingNormal_TK(tex, samplerState, pos, normal);
+    #elif defined(_MAPPINGMODE_BIPLANAR)
+        float3 texNormal = normalize(UnpackNormal(float4(BilpanarMapping_TK(tex, samplerState, pos, normal), 1.0f)));
+        return localToWorld(worldTangent, normal, worldBinormal, float3(texNormal.x, texNormal.z, -texNormal.y));
+    #elif defined(_MAPPINGMODE_DITHER_TRIPLANAR)
+        float3 texNormal = UnpackNormal(float4(DitherTriplanarMapping_TK(tex, samplerState, pos, normal, pixelId), 1.0f));
+        return localToWorld(worldTangent, normal, worldBinormal, float3(texNormal.x, texNormal.z, -texNormal.y));
+    #else
+        float3 texNormal = UnpackNormal(tex.Sample(samplerState, uv));
+        return localToWorld(worldTangent, normal, worldBinormal, float3(texNormal.x, texNormal.z, -texNormal.y));
+    #endif
+}
 
 #endif

@@ -143,15 +143,21 @@ fixed4 FragTKStandardForwardBase(TKStandardVertexOutput i) : SV_Target
     float3 normalWorld = i.worldNormal;
 
     float3 viewDirection = normalize(_WorldSpaceCameraPos - i.worldPos);
-    float3 normal = UnpackNormal(_BumpMap.Sample(sampler_BumpMap, i.uv));
-    normal = normalize(normal);
-    normalWorld = localToWorld(i.worldTangent, i.worldNormal, i.worldBinormal, float3(normal.x, normal.z, -normal.y));
+    // float3 normal = UnpackNormal(_BumpMap.Sample(sampler_BumpMap, i.uv));
+    // normal = normalize(normal);
+    // normalWorld = localToWorld(i.worldTangent, i.worldNormal, i.worldBinormal, float3(normal.x, normal.z, -normal.y));
     
-    normalWorld = normalize(normalWorld);
+    //float3 normalWorld = i.worldNormal;
 
     int2 pixelId = int2(i.screenPos.xy * _ScreenParams.xy);
     MaterialParameter matParam;
     SetMaterialParameterTK(matParam, i.uv, i.worldPos, normalWorld, pixelId);
+
+    normalWorld = normalize(SAMPLE2D_NORMALMAP_TK(_BumpMap, sampler_BumpMap, i.uv,
+    i.worldPos, normalWorld, i.worldTangent, i.worldBinormal, pixelId));
+    //normalWorld = localToWorld(i.worldTangent, i.worldNormal, i.worldBinormal, float3(normalmap.x, normalmap.z, -normalmap.y));
+    // normalWorld = SAMPLE2D_NORMALMAP_TK(_BumpMap, sampler_BumpMap, i.uv, i.worldPos, normalWorld, pixelId);
+
 
     float3 lightDir = _WorldSpaceLightPos0.xyz;
     UNITY_LIGHT_ATTENUATION(atten, i, worldPos)
@@ -240,6 +246,12 @@ fixed4 FragTKStandardForwardBase(TKStandardVertexOutput i) : SV_Target
         shade_color += addLightMap3 * _AddLightmap3_Power;
     #endif
 
+    //Debug
+    #if defined(_DEBUGMODE_NORMAL)
+        shade_color = normalWorld * 0.5 + 0.5;
+    #elif defined(_DEBUGMODE_BASECOLOR)
+        shade_color = matParam.basecolor;
+    #endif
     return fixed4(shade_color, 1.0);
 }
 
