@@ -22,11 +22,36 @@ public class TakenokoStandardGUI : ShaderGUI
         Bake
     }
 
+    private enum MappingModeEnum
+    {
+        UV,
+        Triplanar,
+        Biplanar,
+        DitheredTriplanar
+    }
+
+    private enum SamplerModeEnum
+    {
+        None,
+        Stochastic,
+        Hex,
+        Volonoi
+    }
+
+    private enum DebugModeEnum
+    {
+        None,
+        BaseColor,
+        Normal,
+    }
+
     private GUIContent BaseColorText = new GUIContent("BaseColor");
     private GUIContent RoughnessText = new GUIContent("Roughness");
     private GUIContent NormalText = new GUIContent("Normal Map");
     private GUIContent HeightText = new GUIContent("Height Map");
 
+    MaterialProperty MappingMode;
+    MaterialProperty SamplerMode;
     MaterialProperty Color;
     MaterialProperty MainTex;
     MaterialProperty Cutoff;
@@ -69,6 +94,8 @@ public class TakenokoStandardGUI : ShaderGUI
     MaterialProperty AddLightmap3_Power;
     MaterialProperty AddLightmap3;
 
+    MaterialProperty DebugMode;
+
     bool firstTime = true;
 
     public override void OnGUI(MaterialEditor materialEditor, MaterialProperty[] properties)
@@ -86,6 +113,14 @@ public class TakenokoStandardGUI : ShaderGUI
             using (new EditorGUILayout.VerticalScope("HelpBox"))
             {
                 GUILayout.Space(5);
+                MappingModeEnum mappingMode = (MappingModeEnum)MappingMode.floatValue;
+                mappingMode = (MappingModeEnum)EditorGUILayout.Popup("Mapping Mode", (int)mappingMode, Enum.GetNames(typeof(MappingModeEnum)));
+                MappingMode.floatValue = (float)mappingMode;
+
+                SamplerModeEnum samplerMode = (SamplerModeEnum)SamplerMode.floatValue;
+                samplerMode = (SamplerModeEnum)EditorGUILayout.Popup("Sampler Mode", (int)samplerMode, Enum.GetNames(typeof(SamplerModeEnum)));
+                SamplerMode.floatValue = (float)samplerMode;
+
                 materialEditor.ShaderProperty(Color, "BaseColor Tint");
                 materialEditor.ShaderProperty(MainTex, "BaseColor Map");
                 GUILayout.Space(10);
@@ -186,6 +221,12 @@ public class TakenokoStandardGUI : ShaderGUI
             }
 
 
+            using (new EditorGUILayout.VerticalScope("HelpBox"))
+            {
+                DebugModeEnum debugMode = (DebugModeEnum)DebugMode.floatValue;
+                debugMode = (DebugModeEnum)EditorGUILayout.Popup("Debug Mode", (int)debugMode, Enum.GetNames(typeof(DebugModeEnum)));
+                DebugMode.floatValue = (float)debugMode;
+            }
         }
         if (EditorGUI.EndChangeCheck())
         {
@@ -196,6 +237,8 @@ public class TakenokoStandardGUI : ShaderGUI
 
     public void setMaterialProperty(MaterialProperty[] properties)
     {
+        MappingMode = FindProperty("_MappingMode", properties);
+        SamplerMode = FindProperty("_SamplerMode", properties);
         Color = FindProperty("_Color", properties);
         MainTex = FindProperty("_MainTex", properties);
 
@@ -241,6 +284,8 @@ public class TakenokoStandardGUI : ShaderGUI
         AddLightmap3_ON = FindProperty("_AddLightmap3_ON", properties);
         AddLightmap3_Power = FindProperty("_AddLightmap3_Power", properties);
         AddLightmap3 = FindProperty("_AddLightmap3", properties);
+
+        DebugMode = FindProperty("_DebugMode", properties);
     }
 
     void SetKeyward(Material material, String shaderKey, bool state)
@@ -272,6 +317,64 @@ public class TakenokoStandardGUI : ShaderGUI
     void SetMaterialKeywords(Material material)
     {
         SetKeyward(material, "_EMISSION", Emission.floatValue);
+
+        MappingModeEnum mappingMode = (MappingModeEnum)MappingMode.floatValue;
+        switch (mappingMode)
+        {
+            case MappingModeEnum.UV:
+                SetKeyward(material, "_MAPPINGMODE_NONE", true);
+                SetKeyward(material, "_MAPPINGMODE_TRIPLANAR", false);
+                SetKeyward(material, "_MAPPINGMODE_BIPLANAR", false);
+                SetKeyward(material, "_MAPPINGMODE_DITHER_TRIPLANAR", false);
+                break;
+            case MappingModeEnum.Triplanar:
+                SetKeyward(material, "_MAPPINGMODE_NONE", false);
+                SetKeyward(material, "_MAPPINGMODE_TRIPLANAR", true);
+                SetKeyward(material, "_MAPPINGMODE_BIPLANAR", false);
+                SetKeyward(material, "_MAPPINGMODE_DITHER_TRIPLANAR", false);
+                break;
+            case MappingModeEnum.Biplanar:
+                SetKeyward(material, "_MAPPINGMODE_NONE", false);
+                SetKeyward(material, "_MAPPINGMODE_TRIPLANAR", false);
+                SetKeyward(material, "_MAPPINGMODE_BIPLANAR", true);
+                SetKeyward(material, "_MAPPINGMODE_DITHER_TRIPLANAR", false);
+                break;
+            case MappingModeEnum.DitheredTriplanar:
+                SetKeyward(material, "_MAPPINGMODE_NONE", false);
+                SetKeyward(material, "_MAPPINGMODE_TRIPLANAR", false);
+                SetKeyward(material, "_MAPPINGMODE_BIPLANAR", false);
+                SetKeyward(material, "_MAPPINGMODE_DITHER_TRIPLANAR", true);
+                break;
+        }
+
+        SamplerModeEnum samplerMode = (SamplerModeEnum)SamplerMode.floatValue;
+        switch (samplerMode)
+        {
+            case SamplerModeEnum.None:
+                SetKeyward(material, "_SAMPLERMODE_NONE", true);
+                SetKeyward(material, "_SAMPLERMODE_STOCHASTIC", false);
+                SetKeyward(material, "_SAMPLERMODE_HEX", false);
+                SetKeyward(material, "_SAMPLERMODE_VOLONOI", false);
+                break;
+            case SamplerModeEnum.Stochastic:
+                SetKeyward(material, "_SAMPLERMODE_NONE", false);
+                SetKeyward(material, "_SAMPLERMODE_STOCHASTIC", true);
+                SetKeyward(material, "_SAMPLERMODE_HEX", false);
+                SetKeyward(material, "_SAMPLERMODE_VOLONOI", false);
+                break;
+            case SamplerModeEnum.Hex:
+                SetKeyward(material, "_SAMPLERMODE_NONE", false);
+                SetKeyward(material, "_SAMPLERMODE_STOCHASTIC", false);
+                SetKeyward(material, "_SAMPLERMODE_HEX", true);
+                SetKeyward(material, "_SAMPLERMODE_VOLONOI", false);
+                break;
+            case SamplerModeEnum.Volonoi:
+                SetKeyward(material, "_SAMPLERMODE_NONE", false);
+                SetKeyward(material, "_SAMPLERMODE_STOCHASTIC", false);
+                SetKeyward(material, "_SAMPLERMODE_HEX", false);
+                SetKeyward(material, "_SAMPLERMODE_VOLONOI", true);
+                break;
+        }
 
         LightmapFormatEnum lightmapFormat = (LightmapFormatEnum)LightmapMode.floatValue;
 
@@ -312,6 +415,26 @@ public class TakenokoStandardGUI : ShaderGUI
         if (Emission.floatValue == 0.0)
         {
             material.globalIlluminationFlags = MaterialGlobalIlluminationFlags.None;
+        }
+
+        DebugModeEnum debugModeEnum = (DebugModeEnum)DebugMode.floatValue;
+        switch (debugModeEnum)
+        {
+            case DebugModeEnum.None:
+                SetKeyward(material, "_DEBUGMODE_NONE", true);
+                SetKeyward(material, "_DEBUGMODE_BASECOLOR", false);
+                SetKeyward(material, "_DEBUGMODE_NORMAL", false);
+                break;
+            case DebugModeEnum.BaseColor:
+                SetKeyward(material, "_DEBUGMODE_NONE", false);
+                SetKeyward(material, "_DEBUGMODE_BASECOLOR", true);
+                SetKeyward(material, "_DEBUGMODE_NORMAL", false);
+                break;
+            case DebugModeEnum.Normal:
+                SetKeyward(material, "_DEBUGMODE_NONE", false);
+                SetKeyward(material, "_DEBUGMODE_BASECOLOR", false);
+                SetKeyward(material, "_DEBUGMODE_NORMAL", true);
+                break;
         }
     }
 
