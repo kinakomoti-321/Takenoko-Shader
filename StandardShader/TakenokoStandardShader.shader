@@ -20,9 +20,9 @@
 
     Properties
     {
+        [Enum(None, 0, Triplanar, 1, Biplanar, 2, DitheredTriplanar, 3)] _MappingMode ("Mapping Mode", Int) = 0
+        [Enum(None, 0, Stochastic, 1, HexTiling, 2, Volonoi, 3)] _SamplerMode ("Sampler Mode", Int) = 0
 
-        [Enum(NONE, 0, TRIPLANAR, 1, BIPLANAR, 2, DITHER_TRIPLANAR, 3)] _MappingMode ("Mapping Mode", Int) = 0
-        [Enum(NONR, 0, Stochastic, 1, HEX, 2, VOLONOI, 3)] _SamplerMode ("Sampler Mode", Int) = 0
         _Color ("Color", Color) = (1, 1, 1, 1)
         _MainTex ("Albedo", 2D) = "white" { }
 
@@ -38,8 +38,8 @@
         _BumpMap ("Normal Map", 2D) = "bump" { }
 
         [Toggle(_EMISSION)] _Emission ("Emission", Float) = 0.0
-        [Enum(NONE, 0, REALTIME, 1, BAKE, 2)] _EmissionMode ("Emission Mode", Int) = 0
-        _EmissionColor ("Color", Color) = (0, 0, 0)
+        [Enum(None, 0, RealTime, 1, Bake, 2)] _EmissionMode ("Emission Mode", Int) = 0
+        [HDR] _EmissionColor ("Color", Color) = (0, 0, 0, 0)
         _EmissionMap ("Emission", 2D) = "white" { }
 
         [Toggle(_TK_THINFILM_ON)] _ThinFilm_ON ("Thin Film", Float) = 0.0
@@ -53,7 +53,7 @@
         [HideInInspector] _DstBlend ("__dst", Float) = 0.0
         [HideInInspector] _ZWrite ("__zw", Float) = 1.0
 
-        [Enum(NONE, 0, SH, 1, MONOSH, 2)] _LightmapMode ("Lightmap Mode", Int) = 0
+        [Enum(Defalut, 0, SH, 1, MonoSH, 2)] _LightmapMode ("Lightmap Mode", Int) = 0
         _LightmapPower ("Add Lightmap Power", Range(0.0, 1.0)) = 1.0
         [Toggle(_SHMODE_NONLINER)] _SHModeNonLiner ("NonLiner SH", Float) = 1.0
         [Toggle(_SPECULAR_OCCLUSION)] _SpecularOcclusion ("Specular Occlusion", Float) = 0.0
@@ -90,6 +90,7 @@
             #pragma fragment FragTKStandardForwardBase
             #pragma multi_compile_local _LIGHTMAPMODE_NONE _LIGHTMAPMODE_SH _LIGHTMAPMODE_MONOSH
             #pragma multi_compile_local _MAPPINGMODE_NONE _MAPPINGMODE_TRIPLANAR _MAPPINGMODE_BIPLANAR _MAPPINGMODE_DITHER_TRIPLANAR
+            #pragma multi_compile_local _SAMPLERMODE_NONE _SAMPLERMODE_STOCHASTIC _SAMPLERMODE_HEX _SAMPLERMODE_VOLONOI
 
             #pragma shader_feature_local _TK_THINFILM_ON
             #pragma shader_feature_local _TK_THINFILM_USE_MAP

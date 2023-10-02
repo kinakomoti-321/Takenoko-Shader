@@ -4,16 +4,16 @@
 #define SAMPLE2D_TK(tex, sampler_tex, uv) tex.Sample(sampler_tex, uv)
 
 #define SAMPLE2D_GRAD_TK(tex, sampler_tex, uv, dx, dy) tex.SampleGrad(sampler_tex, uv, dx, dy)
-#define SAMPLE2D_GRAD_TK(tex, sampler_tex, uv) SAMPLE2D_GRAD_TK(tex, sampler_tex, uv, ddx(uv), ddy(uv))
+#define SAMPLE2D_GRAD_TK(tex, sampler_tex, uv) tex.SampleGrad(sampler_tex, uv, ddx(uv), ddy(uv))
 
 inline float3 TriplanarMapping_TK(Texture2D tex, SamplerState sampler_tex, float3 pos, float3 normal)
 {
     float3 blend = abs(normal);
-    float3 blend = blend / (blend.x + blend.y + blend.z);
+    blend = blend / (blend.x + blend.y + blend.z);
     
-    float3 uvX = pos.yz;
-    float3 uvY = pos.xz;
-    float3 uvZ = pos.xy;
+    float2 uvX = pos.yz;
+    float2 uvY = pos.xz;
+    float2 uvZ = pos.xy;
 
     uvX = (normal.x < 0) ? - uvX : uvX;
     uvY = (normal.y < 0) ? - uvY + 0.5 : uvY + 0.5;
@@ -29,11 +29,11 @@ inline float3 TriplanarMapping_TK(Texture2D tex, SamplerState sampler_tex, float
 inline float3 TriplanarMappingNormal_TK(Texture2D tex, SamplerState sampler_tex, float3 pos, float3 normal)
 {
     float3 blend = abs(normal);
-    float3 blend = blend / (blend.x + blend.y + blend.z);
+    blend = blend / (blend.x + blend.y + blend.z);
     
-    float3 uvX = pos.yz;
-    float3 uvY = pos.xz;
-    float3 uvZ = pos.xy;
+    float2 uvX = pos.yz;
+    float2 uvY = pos.xz;
+    float2 uvZ = pos.xy;
 
     uvX = (normal.x < 0) ? - uvX : uvX;
     uvY = (normal.y < 0) ? - uvY + 0.5 : uvY + 0.5;
@@ -46,7 +46,7 @@ inline float3 TriplanarMappingNormal_TK(Texture2D tex, SamplerState sampler_tex,
     return blend.x * texX + blend.y * texY + blend.z * texZ;
 }
 
-inline float3 BilpanarMapping_TK(Texture2D tex, SamplerState sampler, float3 pos, float3 normal)
+inline float3 BilpanarMapping_TK(Texture2D tex, SamplerState samplerState, float3 pos, float3 normal)
 {
     float k = 8.0;
 
@@ -62,10 +62,10 @@ inline float3 BilpanarMapping_TK(Texture2D tex, SamplerState sampler, float3 pos
     int3(2, 0, 1) ;
     int3 me = 3 - mi - ma;
     
-    float3 x_sample = _MainTex.SampleGrad(sampler_MainTex, float2(pos[ma.y], pos[ma.z]),
+    float3 x_sample = tex.SampleGrad(samplerState, float2(pos[ma.y], pos[ma.z]),
     float2(dpdx[ma.y], dpdx[ma.z]),
     float2(dpdy[ma.y], dpdy[ma.z]));
-    float3 y_sample = _MainTex.SampleGrad(sampler_MainTex, float2(pos[me.y], pos[me.z]),
+    float3 y_sample = tex.SampleGrad(samplerState, float2(pos[me.y], pos[me.z]),
     float2(dpdx[me.y], dpdx[me.z]),
     float2(dpdy[me.y], dpdy[me.z]));
     
@@ -83,13 +83,13 @@ inline float DitherGradientNoise(int frame, int2 pixel)
     return frac(52.9829189f * frac(0.06711056f * pixel.x + 0.00583715f * pixel.y));
 }
 
-inline float3 DitherTriplanarMapping_TK(Texture2D tex, SamplerState sampler, float3 pos, float3 normal, int2 pixelId)
+inline float3 DitherTriplanarMapping_TK(Texture2D tex, SamplerState sampler_tex, float3 pos, float3 normal, int2 pixelId)
 {
     float3 blend = abs(normal);
     blend = pow(blend, 10.0);
     blend = blend / (blend.x + blend.y + blend.z);
 
-    float dither = GradientNoise(1, pixelId);
+    float dither = DitherGradientNoise(1, pixelId);
     dither -= 0.5;
     float index = 0;
     index = blend.x - dither > blend.y ? 0 : 1;
@@ -118,19 +118,19 @@ inline float3 DitherTriplanarMapping_TK(Texture2D tex, SamplerState sampler, flo
     {
         tri_uv = uvX;
         ddx_ddy_tri_uv = ddx_ddy_uvX;
-        col = _MainTex.SampleGrad(sampler_MainTex, tri_uv, ddx_ddy_tri_uv.xy, ddx_ddy_tri_uv.zw).rgb;
+        col = tex.SampleGrad(sampler_tex, tri_uv, ddx_ddy_tri_uv.xy, ddx_ddy_tri_uv.zw).rgb;
     }
     else if (index == 1)
     {
         tri_uv = uvY;
         ddx_ddy_tri_uv = ddx_ddy_uvY;
-        col = _MainTex.SampleGrad(sampler_MainTex, tri_uv, ddx_ddy_tri_uv.xy, ddx_ddy_tri_uv.zw).rgb;
+        col = tex.SampleGrad(sampler_tex, tri_uv, ddx_ddy_tri_uv.xy, ddx_ddy_tri_uv.zw).rgb;
     }
     else if (index == 2)
     {
         tri_uv = uvZ;
         ddx_ddy_tri_uv = ddx_ddy_uvZ;
-        col = _MainTex.SampleGrad(sampler_MainTex, tri_uv, ddx_ddy_tri_uv.xy, ddx_ddy_tri_uv.zw).rgb;
+        col = tex.SampleGrad(sampler_tex, tri_uv, ddx_ddy_tri_uv.xy, ddx_ddy_tri_uv.zw).rgb;
     }
 
     float3 ddx_col = ddx(col);
@@ -139,19 +139,26 @@ inline float3 DitherTriplanarMapping_TK(Texture2D tex, SamplerState sampler, flo
     return col;
 }
 
-inline float3 SAMPLE2D_MAINTEX_TK(Texture2D tex, SamplerState samplerState float2 uv, float3 pos, float3 normal, int2 pixelId)
+
+
+inline float3 SAMPLE2D_MAINTEX_TK(Texture2D tex, SamplerState samplerState, float2 uv, float3 pos, float3 normal, int2 pixelId)
 {
     #if defined(_MAPPINGMODE_NONE)
-        return tex.Sample(samplerState, uv);
-    #else if defined(_MAPPINGMODE_TRIPLANAR)
+        return tex.Sample(samplerState, uv).rgb;
+    #elif defined(_MAPPINGMODE_TRIPLANAR)
         return TriplanarMapping_TK(tex, samplerState, pos, normal);
-    #else if defined(_MAPPINGMODE_BILPLANAR)
+    #elif defined(_MAPPINGMODE_BIPLANAR)
         return BilpanarMapping_TK(tex, samplerState, pos, normal);
-    #else if defined(_MAPPINGMODE_DITHER)
+    #elif defined(_MAPPINGMODE_DITHER_TRIPLANAR)
         return DitherTriplanarMapping_TK(tex, samplerState, pos, normal, pixelId);
     #else
-        return tex.Sample(samplerState, uv);
+        return tex.Sample(samplerState, uv).rgb;
     #endif
 }
+
+// inline float3 SAMPLE2D_NORMALMAP_TK(Texture2D tex, SamplerState samplerState, float2 uv, float3 pos, float3 normal, int2 pixelId)
+// {
+
+// }
 
 #endif

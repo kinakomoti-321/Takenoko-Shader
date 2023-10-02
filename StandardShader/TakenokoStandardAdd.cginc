@@ -11,23 +11,27 @@
 #include "Lighting.cginc"
 
 float4 _Color;
-sampler2D _MainTex;
+Texture2D _MainTex;
 SamplerState sampler_MainTex;
 float4 _MainTex_ST;
 
 float _Roughness;
-sampler2D _RoughnessMap;
+Texture2D _RoughnessMap;
+SamplerState sampler_RoughnessMap;
 float4 _RoughnessMap_ST;
 
 float _Metallic;
-sampler2D _MetallicGlossMap;
+Texture2D _MetallicGlossMap;
+SamplerState sampler_MetallicGlossMap;
 float4 _MetallicMap_ST;
 
-sampler2D _BumpMap;
+Texture2D _BumpMap;
+SamplerState sampler_BumpMap;
 float4 _BumpMap_ST;
 
 float4 _EmissionColor;
-sampler2D _EmissionMap;
+Texture2D _EmissionMap;
+SamplerState sampler_EmissionMap;
 float4 _EmissionMap_ST;
 
 
@@ -74,6 +78,8 @@ struct TKStandardVertexOutput
 
     float3 worldTangent : TEXCOORD7;
     float3 worldBinormal : TEXCOORD8;
+    float2 screenPos : TEXCOORD9;
+    float3 objectPos : TEXCOORD10;
 
     UNITY_VERTEX_INPUT_INSTANCE_ID
     UNITY_VERTEX_OUTPUT_STEREO
@@ -95,6 +101,9 @@ TKStandardVertexOutput VertTKStandardAdd(TKStandardVertexInput v)
     o.worldNormal = worldNormal;
     o.worldTangent = UnityObjectToWorldNormal(v.tangent);
     o.worldBinormal = cross(o.worldNormal, o.worldTangent) * v.tangent.w;
+    float4 scpos = ComputeScreenPos(o.pos);
+    o.screenPos = scpos.xy / scpos.w;
+    o.objectPos = v.vertex.xyz;
 
     #ifdef DYNAMICLIGHTMAP_ON
         o.lightmapUV.zw = v.texcoord2.xy * unity_DynamicLightmapST.xy + unity_DynamicLightmapST.zw;
@@ -118,14 +127,15 @@ fixed4 FragTKStandardAdd(TKStandardVertexOutput i) : SV_Target
     float3 normalWorld = i.worldNormal;
 
     float3 viewDirection = normalize(_WorldSpaceCameraPos - i.worldPos);
-    float3 normal = UnpackNormal(tex2D(_BumpMap, i.uv));
+    float3 normal = UnpackNormal(_BumpMap.Sample(sampler_BumpMap, i.uv));
     normal = normalize(normal);
     normalWorld = localToWorld(i.worldTangent, i.worldNormal, i.worldBinormal, float3(normal.x, normal.z, -normal.y));
     
     normalWorld = normalize(normalWorld);
 
+    int2 pixelId = int2(i.screenPos.xy * _ScreenParams.xy);
     MaterialParameter matParam;
-    SetMaterialParameterTK(matParam, i.uv);
+    SetMaterialParameterTK(matParam, i.uv, i.worldPos, normalWorld, pixelId);
 
     float3 lightDir;
     if (_WorldSpaceLightPos0.w > 0.0)

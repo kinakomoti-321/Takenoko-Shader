@@ -2,6 +2,7 @@
 #define TK_STANDARD_BSDF
 
 #include "UnityStandardBRDF.cginc"
+#include "TakenokoSampler.cginc"
 #include "TakenokoThinFilm.cginc"
 #include "../common/constant.cginc"
 #include "../common/color.cginc"
@@ -225,14 +226,20 @@ UnityGIInput giInput, MaterialParameter matParam)
     specular += specularGI;
 }
 
-void SetMaterialParameterTK(inout MaterialParameter matParam, float2 uv)
+void SetMaterialParameterTK(inout MaterialParameter matParam, float2 uv, float3 worldPos, float3 worldNormal, float2 pixelId)
 {
-    matParam.basecolor = _Color * tex2D(_MainTex, uv).rgb;
-    matParam.metallic = _Metallic * tex2D(_MetallicGlossMap, uv).r;
+    // matParam.basecolor = _Color * tex2D(_MainTex, uv).rgb;
+    // matParam.metallic = _Metallic * tex2D(_MetallicGlossMap, uv).r;
     
-    float roughness = _Roughness * tex2D(_RoughnessMap, uv).r;
-    matParam.roughness = clamp(roughness * roughness, 0.001, 1.0);
-    matParam.emission = _EmissionColor * tex2D(_EmissionMap, uv).rgb;
+    // float roughness = _Roughness * tex2D(_RoughnessMap, uv).r;
+    // matParam.roughness = clamp(roughness * roughness, 0.001, 1.0);
+    // matParam.emission = _EmissionColor * tex2D(_EmissionMap, uv).rgb;
+
+    matParam.basecolor = _Color * SAMPLE2D_MAINTEX_TK(_MainTex, sampler_MainTex, uv, worldPos, worldNormal, pixelId);
+    matParam.roughness = _Roughness * SAMPLE2D_MAINTEX_TK(_RoughnessMap, sampler_RoughnessMap, uv, worldPos, worldNormal, pixelId).r;
+    matParam.metallic = _Metallic * SAMPLE2D_MAINTEX_TK(_MetallicGlossMap, sampler_MetallicGlossMap, uv, worldPos, worldNormal, pixelId).r;
+
+    matParam.emission = _EmissionColor * SAMPLE2D_MAINTEX_TK(_EmissionMap, sampler_EmissionMap, uv, worldPos, worldNormal, pixelId);
 
     //ThinFilm Parametor
     #if defined(_TK_THINFILM_ON)
