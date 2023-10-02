@@ -262,7 +262,7 @@ fixed4 FragTKStandardForwardBase(TKStandardVertexOutput i) : SV_Target
 
     //Debug
     #if defined(_DEBUGMODE_NORMAL)
-        shade_color = worldNormal * 0.5 + 0.5;
+        shade_color = normalWorld * 0.5 + 0.5;
     #elif defined(_DEBUGMODE_BASECOLOR)
         shade_color = matParam.basecolor;
     #endif
