@@ -25,7 +25,7 @@ float4 _RoughnessMap_ST;
 float _Metallic;
 Texture2D _MetallicGlossMap;
 SamplerState sampler_MetallicGlossMap;
-float4 _MetallicMap_ST;
+float4 _MetallicGlossMap_ST;
 
 Texture2D _BumpMap;
 SamplerState sampler_BumpMap;
@@ -44,6 +44,7 @@ float _LightmapPower;
     float _ThinFilmMiddleThicknessMin;
     float _ThinFilmMiddleThicknessMax;
     Texture2D _ThinFilmMiddleThicknessMap;
+    float4 _ThinFilmMiddleThicknessMap_ST;
 #endif
 
 #if defined(_ADDLIGHTMAP1_ON)
@@ -96,6 +97,7 @@ struct TKStandardVertexOutput
     float3 worldBinormal : TEXCOORD8;
     float2 screenPos : TEXCOORD9;
     float3 objectPos : TEXCOORD10;
+    float3 objectNormal : TEXCOORD11;
 
     UNITY_VERTEX_INPUT_INSTANCE_ID
     UNITY_VERTEX_OUTPUT_STEREO
@@ -120,6 +122,7 @@ TKStandardVertexOutput VertTKStandardForwardBase(TKStandardVertexInput v)
     float4 scpos = ComputeScreenPos(o.pos);
     o.screenPos = scpos.xy / scpos.w;
     o.objectPos = v.vertex.xyz;
+    o.objectNormal = normalize(v.normal.xyz);
 
     #ifdef DYNAMICLIGHTMAP_ON
         o.lightmapUV.zw = v.texcoord2.xy * unity_DynamicLightmapST.xy + unity_DynamicLightmapST.zw;
@@ -151,9 +154,19 @@ fixed4 FragTKStandardForwardBase(TKStandardVertexOutput i) : SV_Target
 
     int2 pixelId = int2(i.screenPos.xy * _ScreenParams.xy);
     MaterialParameter matParam;
-    SetMaterialParameterTK(matParam, i.uv, i.worldPos, normalWorld, pixelId);
+    float3 mappingPos = i.worldPos;
+    #if defined(_MAPPING_POS_OBJ)
+        mappingPos = i.objectPos;
+    #endif
+    
+    float3 mappingNormal = i.worldNormal;
+    #if defined(_MAPPING_NORMAL_OBJ)
+        mappingNormal = i.objectNormal;
+    #endif
 
-    normalWorld = normalize(SAMPLE2D_NORMALMAP_TK(_BumpMap, sampler_BumpMap, i.uv,
+    SetMaterialParameterTK(matParam, i.uv, mappingPos, mappingNormal, pixelId);
+
+    normalWorld = normalize(SAMPLE2D_NORMALMAP_TK(_BumpMap, sampler_BumpMap, i.uv, _BumpMap_ST,
     i.worldPos, normalWorld, i.worldTangent, i.worldBinormal, pixelId));
     //normalWorld = localToWorld(i.worldTangent, i.worldNormal, i.worldBinormal, float3(normalmap.x, normalmap.z, -normalmap.y));
     // normalWorld = SAMPLE2D_NORMALMAP_TK(_BumpMap, sampler_BumpMap, i.uv, i.worldPos, normalWorld, pixelId);
@@ -248,7 +261,7 @@ fixed4 FragTKStandardForwardBase(TKStandardVertexOutput i) : SV_Target
 
     //Debug
     #if defined(_DEBUGMODE_NORMAL)
-        shade_color = normalWorld * 0.5 + 0.5;
+        shade_color = worldNormal * 0.5 + 0.5;
     #elif defined(_DEBUGMODE_BASECOLOR)
         shade_color = matParam.basecolor;
     #endif

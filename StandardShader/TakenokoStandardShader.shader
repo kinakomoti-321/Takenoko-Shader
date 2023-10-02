@@ -22,6 +22,7 @@
     {
         [Enum(None, 0, Triplanar, 1, Biplanar, 2, DitheredTriplanar, 3)] _MappingMode ("Mapping Mode", Int) = 0
         [Enum(None, 0, Stochastic, 1, HexTiling, 2, Volonoi, 3)] _SamplerMode ("Sampler Mode", Int) = 0
+        [Toggle(_MAPPING_POS_OBJ)] _MappingPosObj ("Mapping Position Object", Float) = 0.0
 
         _Color ("Color", Color) = (1, 1, 1, 1)
         _MainTex ("Albedo", 2D) = "white" { }
@@ -95,6 +96,8 @@
             #pragma multi_compile_local _SAMPLERMODE_NONE _SAMPLERMODE_STOCHASTIC _SAMPLERMODE_HEX _SAMPLERMODE_VOLONOI
 
             #pragma multi_compile _DEBUGMODE_NONE _DEBUGMODE_BASECOLOR _DEBUGMODE_NORMAL
+
+            #pragma shader_feature_local _MAPPING_POS_OBJ
 
             #pragma shader_feature_local _TK_THINFILM_ON
             #pragma shader_feature_local _TK_THINFILM_USE_MAP

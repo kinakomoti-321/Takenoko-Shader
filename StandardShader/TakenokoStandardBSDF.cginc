@@ -235,15 +235,15 @@ void SetMaterialParameterTK(inout MaterialParameter matParam, float2 uv, float3 
     // matParam.roughness = clamp(roughness * roughness, 0.001, 1.0);
     // matParam.emission = _EmissionColor * tex2D(_EmissionMap, uv).rgb;
 
-    matParam.basecolor = _Color * SAMPLE2D_MAINTEX_TK(_MainTex, sampler_MainTex, uv, worldPos, worldNormal, pixelId);
-    matParam.roughness = _Roughness * SAMPLE2D_MAINTEX_TK(_RoughnessMap, sampler_RoughnessMap, uv, worldPos, worldNormal, pixelId).r;
-    matParam.metallic = _Metallic * SAMPLE2D_MAINTEX_TK(_MetallicGlossMap, sampler_MetallicGlossMap, uv, worldPos, worldNormal, pixelId).r;
+    matParam.basecolor = _Color * SAMPLE2D_MAINTEX_TK(_MainTex, sampler_MainTex, uv, _MainTex_ST, worldPos, worldNormal, pixelId);
+    matParam.roughness = _Roughness * SAMPLE2D_MAINTEX_TK(_RoughnessMap, sampler_RoughnessMap, uv, _RoughnessMap_ST, worldPos, worldNormal, pixelId).r;
+    matParam.metallic = _Metallic * SAMPLE2D_MAINTEX_TK(_MetallicGlossMap, sampler_MetallicGlossMap, uv, _MetallicGlossMap_ST, worldPos, worldNormal, pixelId).r;
 
-    matParam.emission = _EmissionColor * SAMPLE2D_MAINTEX_TK(_EmissionMap, sampler_EmissionMap, uv, worldPos, worldNormal, pixelId);
+    matParam.emission = _EmissionColor * SAMPLE2D_MAINTEX_TK(_EmissionMap, sampler_EmissionMap, uv, _EmissionMap_ST, worldPos, worldNormal, pixelId);
 
     //ThinFilm Parametor
     #if defined(_TK_THINFILM_ON)
-        float thickness_value = _ThinFilmMiddleThicknessMap.Sample(sampler_MainTex, uv).r * _ThinFilmMiddleThickness;
+        float thickness_value = SAMPLE2D_MAINTEX_TK(_ThinFilmMiddleThicknessMap, sampler_MainTex, uv, _ThinFilmMiddleThicknessMap_ST, worldPos, worldNormal, pixelId) * _ThinFilmMiddleThickness;
         float thickness = lerp(_ThinFilmMiddleThicknessMin, _ThinFilmMiddleThicknessMax, thickness_value); //nm
 
         matParam.middle_thickness = thickness;

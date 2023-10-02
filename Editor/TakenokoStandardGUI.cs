@@ -51,7 +51,9 @@ public class TakenokoStandardGUI : ShaderGUI
     private GUIContent HeightText = new GUIContent("Height Map");
 
     MaterialProperty MappingMode;
+    MaterialProperty MappingPosObj;
     MaterialProperty SamplerMode;
+
     MaterialProperty Color;
     MaterialProperty MainTex;
     MaterialProperty Cutoff;
@@ -116,6 +118,10 @@ public class TakenokoStandardGUI : ShaderGUI
                 MappingModeEnum mappingMode = (MappingModeEnum)MappingMode.floatValue;
                 mappingMode = (MappingModeEnum)EditorGUILayout.Popup("Mapping Mode", (int)mappingMode, Enum.GetNames(typeof(MappingModeEnum)));
                 MappingMode.floatValue = (float)mappingMode;
+                if (mappingMode != MappingModeEnum.UV)
+                {
+                    //materialEditor.ShaderProperty(MappingPosObj, "Mapping Position Object");
+                }
 
                 SamplerModeEnum samplerMode = (SamplerModeEnum)SamplerMode.floatValue;
                 samplerMode = (SamplerModeEnum)EditorGUILayout.Popup("Sampler Mode", (int)samplerMode, Enum.GetNames(typeof(SamplerModeEnum)));
@@ -238,6 +244,7 @@ public class TakenokoStandardGUI : ShaderGUI
     public void setMaterialProperty(MaterialProperty[] properties)
     {
         MappingMode = FindProperty("_MappingMode", properties);
+        MappingPosObj = FindProperty("_MappingPosObj", properties);
         SamplerMode = FindProperty("_SamplerMode", properties);
         Color = FindProperty("_Color", properties);
         MainTex = FindProperty("_MainTex", properties);
