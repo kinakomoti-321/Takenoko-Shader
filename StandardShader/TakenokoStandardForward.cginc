@@ -29,6 +29,7 @@ float4 _MetallicGlossMap_ST;
 
 Texture2D _BumpMap;
 SamplerState sampler_BumpMap;
+float _BumpScale;
 float4 _BumpMap_ST;
 
 float4 _EmissionColor;
@@ -143,7 +144,7 @@ fixed4 FragTKStandardForwardBase(TKStandardVertexOutput i) : SV_Target
     float3 shade_color = 0;
 
     float3 worldPos = i.worldPos;
-    float3 normalWorld = i.worldNormal;
+    float3 normalWorld = normalize(i.worldNormal);
 
     float3 viewDirection = normalize(_WorldSpaceCameraPos - i.worldPos);
     // float3 normal = UnpackNormal(_BumpMap.Sample(sampler_BumpMap, i.uv));
@@ -159,7 +160,7 @@ fixed4 FragTKStandardForwardBase(TKStandardVertexOutput i) : SV_Target
         mappingPos = i.objectPos;
     #endif
     
-    float3 mappingNormal = i.worldNormal;
+    float3 mappingNormal = normalWorld;
     #if defined(_MAPPING_NORMAL_OBJ)
         mappingNormal = i.objectNormal;
     #endif

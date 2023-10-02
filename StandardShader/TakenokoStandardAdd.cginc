@@ -23,16 +23,19 @@ float4 _RoughnessMap_ST;
 float _Metallic;
 Texture2D _MetallicGlossMap;
 SamplerState sampler_MetallicGlossMap;
-float4 _MetallicMap_ST;
+float4 _MetallicGlossMap_ST;
 
 Texture2D _BumpMap;
 SamplerState sampler_BumpMap;
+float _BumpScale;
 float4 _BumpMap_ST;
 
 float4 _EmissionColor;
 Texture2D _EmissionMap;
 SamplerState sampler_EmissionMap;
 float4 _EmissionMap_ST;
+
+float _LightmapPower;
 
 
 #if defined(_TK_THINFILM_ON)

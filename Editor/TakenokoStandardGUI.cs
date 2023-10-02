@@ -34,8 +34,8 @@ public class TakenokoStandardGUI : ShaderGUI
     {
         None,
         Stochastic,
-        Hex,
-        Volonoi
+        // Hex,
+        // Volonoi
     }
 
     private enum DebugModeEnum
@@ -136,6 +136,7 @@ public class TakenokoStandardGUI : ShaderGUI
                 materialEditor.ShaderProperty(Metallic, "Metallic");
                 materialEditor.ShaderProperty(MetallicGlossMap, "Metallic Map");
                 GUILayout.Space(10);
+                materialEditor.ShaderProperty(BumpScale, "Normal Scale");
                 materialEditor.ShaderProperty(BumpMap, "Normal Map");
                 GUILayout.Space(5);
             }
@@ -369,18 +370,18 @@ public class TakenokoStandardGUI : ShaderGUI
                 SetKeyward(material, "_SAMPLERMODE_HEX", false);
                 SetKeyward(material, "_SAMPLERMODE_VOLONOI", false);
                 break;
-            case SamplerModeEnum.Hex:
-                SetKeyward(material, "_SAMPLERMODE_NONE", false);
-                SetKeyward(material, "_SAMPLERMODE_STOCHASTIC", false);
-                SetKeyward(material, "_SAMPLERMODE_HEX", true);
-                SetKeyward(material, "_SAMPLERMODE_VOLONOI", false);
-                break;
-            case SamplerModeEnum.Volonoi:
-                SetKeyward(material, "_SAMPLERMODE_NONE", false);
-                SetKeyward(material, "_SAMPLERMODE_STOCHASTIC", false);
-                SetKeyward(material, "_SAMPLERMODE_HEX", false);
-                SetKeyward(material, "_SAMPLERMODE_VOLONOI", true);
-                break;
+                // case SamplerModeEnum.Hex:
+                //     SetKeyward(material, "_SAMPLERMODE_NONE", false);
+                //     SetKeyward(material, "_SAMPLERMODE_STOCHASTIC", false);
+                //     SetKeyward(material, "_SAMPLERMODE_HEX", true);
+                //     SetKeyward(material, "_SAMPLERMODE_VOLONOI", false);
+                //     break;
+                // case SamplerModeEnum.Volonoi:
+                //     SetKeyward(material, "_SAMPLERMODE_NONE", false);
+                //     SetKeyward(material, "_SAMPLERMODE_STOCHASTIC", false);
+                //     SetKeyward(material, "_SAMPLERMODE_HEX", false);
+                //     SetKeyward(material, "_SAMPLERMODE_VOLONOI", true);
+                //     break;
         }
 
         LightmapFormatEnum lightmapFormat = (LightmapFormatEnum)LightmapMode.floatValue;

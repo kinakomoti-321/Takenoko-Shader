@@ -35,7 +35,7 @@
         _Roughness ("Roughness", Range(0.0, 1.0)) = 0.0
         _RoughnessMap ("Roughness", 2D) = "white" { }
 
-        _BumpScale ("Scale", Float) = 1.0
+        _BumpScale ("Scale", Range(0.0, 3.0)) = 1.0
         [Bump]_BumpMap ("Normal Map", 2D) = "bump" { }
 
         [Toggle(_EMISSION)] _Emission ("Emission", Float) = 0.0
