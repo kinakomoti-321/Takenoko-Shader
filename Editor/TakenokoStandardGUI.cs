@@ -27,7 +27,15 @@ public class TakenokoStandardGUI : ShaderGUI
         UV,
         Triplanar,
         Biplanar,
-        DitheredTriplanar
+        DitheredTriplanar,
+        XYZMask,
+    }
+
+    private enum ParallaxModeEnum
+    {
+        None,
+        Simple,
+        Steep,
     }
 
     private enum SamplerModeEnum
@@ -44,6 +52,7 @@ public class TakenokoStandardGUI : ShaderGUI
         BaseColor,
         Normal,
     }
+
 
     private GUIContent BaseColorText = new GUIContent("BaseColor");
     private GUIContent RoughnessText = new GUIContent("Roughness");
@@ -64,6 +73,10 @@ public class TakenokoStandardGUI : ShaderGUI
 
     MaterialProperty BumpScale;
     MaterialProperty BumpMap;
+
+    MaterialProperty PallaxScale;
+    MaterialProperty PallaxMap;
+    MaterialProperty PallaxMode;
 
     MaterialProperty Emission;
     MaterialProperty EmissionMode;
@@ -138,6 +151,14 @@ public class TakenokoStandardGUI : ShaderGUI
                 GUILayout.Space(10);
                 materialEditor.ShaderProperty(BumpScale, "Normal Scale");
                 materialEditor.ShaderProperty(BumpMap, "Normal Map");
+                GUILayout.Space(10);
+                materialEditor.ShaderProperty(PallaxScale, "Height Scale");
+                materialEditor.ShaderProperty(PallaxMap, "Height Map");
+
+                ParallaxModeEnum pallaxMode = (ParallaxModeEnum)PallaxMode.floatValue;
+                pallaxMode = (ParallaxModeEnum)EditorGUILayout.Popup("Height Mode", (int)pallaxMode, Enum.GetNames(typeof(ParallaxModeEnum)));
+                PallaxMode.floatValue = (float)pallaxMode;
+
                 GUILayout.Space(5);
             }
 
@@ -177,7 +198,6 @@ public class TakenokoStandardGUI : ShaderGUI
             {
                 GUILayout.Space(5);
                 LightmapFormatEnum lightmapFormat = (LightmapFormatEnum)LightmapMode.floatValue;
-
                 lightmapFormat = (LightmapFormatEnum)EditorGUILayout.Popup("Lightmap Format", (int)lightmapFormat, Enum.GetNames(typeof(LightmapFormatEnum)));
                 LightmapMode.floatValue = (float)lightmapFormat;
 
@@ -247,6 +267,7 @@ public class TakenokoStandardGUI : ShaderGUI
         MappingMode = FindProperty("_MappingMode", properties);
         MappingPosObj = FindProperty("_MappingPosObj", properties);
         SamplerMode = FindProperty("_SamplerMode", properties);
+
         Color = FindProperty("_Color", properties);
         MainTex = FindProperty("_MainTex", properties);
 
@@ -258,6 +279,10 @@ public class TakenokoStandardGUI : ShaderGUI
 
         BumpScale = FindProperty("_BumpScale", properties);
         BumpMap = FindProperty("_BumpMap", properties);
+
+        PallaxScale = FindProperty("_PallaxScale", properties);
+        PallaxMap = FindProperty("_PallaxMap", properties);
+        PallaxMode = FindProperty("_PallaxMode", properties);
 
         Emission = FindProperty("_Emission", properties);
         EmissionMode = FindProperty("_EmissionMode", properties);
@@ -334,25 +359,37 @@ public class TakenokoStandardGUI : ShaderGUI
                 SetKeyward(material, "_MAPPINGMODE_TRIPLANAR", false);
                 SetKeyward(material, "_MAPPINGMODE_BIPLANAR", false);
                 SetKeyward(material, "_MAPPINGMODE_DITHER_TRIPLANAR", false);
+                SetKeyward(material, "_MAPPINGMODE_XYZMASK", false);
                 break;
             case MappingModeEnum.Triplanar:
                 SetKeyward(material, "_MAPPINGMODE_NONE", false);
                 SetKeyward(material, "_MAPPINGMODE_TRIPLANAR", true);
                 SetKeyward(material, "_MAPPINGMODE_BIPLANAR", false);
                 SetKeyward(material, "_MAPPINGMODE_DITHER_TRIPLANAR", false);
+                SetKeyward(material, "_MAPPINGMODE_XYZMASK", false);
                 break;
             case MappingModeEnum.Biplanar:
                 SetKeyward(material, "_MAPPINGMODE_NONE", false);
                 SetKeyward(material, "_MAPPINGMODE_TRIPLANAR", false);
                 SetKeyward(material, "_MAPPINGMODE_BIPLANAR", true);
                 SetKeyward(material, "_MAPPINGMODE_DITHER_TRIPLANAR", false);
+                SetKeyward(material, "_MAPPINGMODE_XYZMASK", false);
                 break;
             case MappingModeEnum.DitheredTriplanar:
                 SetKeyward(material, "_MAPPINGMODE_NONE", false);
                 SetKeyward(material, "_MAPPINGMODE_TRIPLANAR", false);
                 SetKeyward(material, "_MAPPINGMODE_BIPLANAR", false);
                 SetKeyward(material, "_MAPPINGMODE_DITHER_TRIPLANAR", true);
+                SetKeyward(material, "_MAPPINGMODE_XYZMASK", false);
                 break;
+            case MappingModeEnum.XYZMask:
+                SetKeyward(material, "_MAPPINGMODE_NONE", false);
+                SetKeyward(material, "_MAPPINGMODE_TRIPLANAR", false);
+                SetKeyward(material, "_MAPPINGMODE_BIPLANAR", false);
+                SetKeyward(material, "_MAPPINGMODE_DITHER_TRIPLANAR", false);
+                SetKeyward(material, "_MAPPINGMODE_XYZMASK", true);
+                break;
+
         }
 
         SamplerModeEnum samplerMode = (SamplerModeEnum)SamplerMode.floatValue;
@@ -382,6 +419,26 @@ public class TakenokoStandardGUI : ShaderGUI
                 //     SetKeyward(material, "_SAMPLERMODE_HEX", false);
                 //     SetKeyward(material, "_SAMPLERMODE_VOLONOI", true);
                 //     break;
+        }
+
+        ParallaxModeEnum pallaxMode = (ParallaxModeEnum)PallaxMode.floatValue;
+        switch (pallaxMode)
+        {
+            case ParallaxModeEnum.None:
+                SetKeyward(material, "_PARALLAXMODE_NONE", true);
+                SetKeyward(material, "_PARALLAXMODE_SIMPLE", false);
+                SetKeyward(material, "_PARALLAXMODE_STEEP", false);
+                break;
+            case ParallaxModeEnum.Simple:
+                SetKeyward(material, "_PARALLAXMODE_NONE", false);
+                SetKeyward(material, "_PARALLAXMODE_SIMPLE", true);
+                SetKeyward(material, "_PARALLAXMODE_STEEP", false);
+                break;
+            case ParallaxModeEnum.Steep:
+                SetKeyward(material, "_PARALLAXMODE_NONE", false);
+                SetKeyward(material, "_PARALLAXMODE_SIMPLE", false);
+                SetKeyward(material, "_PARALLAXMODE_STEEP", true);
+                break;
         }
 
         LightmapFormatEnum lightmapFormat = (LightmapFormatEnum)LightmapMode.floatValue;
