@@ -38,6 +38,10 @@
         _BumpScale ("Scale", Range(0.0, 3.0)) = 1.0
         [Bump]_BumpMap ("Normal Map", 2D) = "bump" { }
 
+        _PallaxScale ("Scale", Range(0.0, 1.0)) = 0.02
+        _PallaxMap ("Pallax Map", 2D) = "black" { }
+        [Enum(Simple, 0, Steep, 1)] _PallaxMode ("Pallax Mode", Int) = 0
+
         [Toggle(_EMISSION)] _Emission ("Emission", Float) = 0.0
         [Enum(None, 0, RealTime, 1, Bake, 2)] _EmissionMode ("Emission Mode", Int) = 0
         [HDR] _EmissionColor ("Color", Color) = (0, 0, 0, 0)
@@ -49,6 +53,7 @@
         _ThinFilmMiddleThicknessMin ("Middle Layer Thickness Minimum(nm)", Float) = 0.0
         _ThinFilmMiddleThicknessMax ("Middle Layer Thickness Maximum(nm)", Float) = 1000.0
         _ThinFilmMiddleThicknessMap ("Middle Layer Thickness Map", 2D) = "white" { }
+
 
         [HideInInspector] _SrcBlend ("__src", Float) = 1.0
         [HideInInspector] _DstBlend ("__dst", Float) = 0.0
@@ -72,6 +77,11 @@
         _AddLightmap3_Power ("Add Lightmap3 Power", Range(0.0, 1.0)) = 1.0
         _AddLightmap3 ("Add Lightmap3", 2D) = "black" { }
 
+        _LightProbeSH_Power ("Light Probe SH Power", Range(0.0, 1.0)) = 1.0
+        _IBLReflection_Power ("IBL Reflection Power", Range(0.0, 1.0)) = 1.0
+        _RealTimeLight_Power ("Real Time Light Power", Range(0.0, 1.0)) = 1.0
+
+
         [Enum(None, 0, BaseColor, 1, Normal, 2)] _DebugMode ("Debug Mode", Int) = 0
     }
 
@@ -94,6 +104,7 @@
             #pragma multi_compile_local _LIGHTMAPMODE_NONE _LIGHTMAPMODE_SH _LIGHTMAPMODE_MONOSH
             #pragma multi_compile_local _MAPPINGMODE_NONE _MAPPINGMODE_TRIPLANAR _MAPPINGMODE_BIPLANAR _MAPPINGMODE_DITHER_TRIPLANAR
             #pragma multi_compile_local _SAMPLERMODE_NONE _SAMPLERMODE_STOCHASTIC _SAMPLERMODE_HEX _SAMPLERMODE_VOLONOI
+            #pragma multi_compile_local _PALLAXMODE_SIMPLE _PALLAXMODE_STEEP
 
             #pragma multi_compile _DEBUGMODE_NONE _DEBUGMODE_BASECOLOR _DEBUGMODE_NORMAL
 

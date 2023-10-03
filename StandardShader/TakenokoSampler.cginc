@@ -52,15 +52,12 @@ float4 StochSample_float(Texture2D tex, float2 uv, SamplerState ss)
 
 #if defined(_SAMPLERMODE_NONE)
     #define SAMPLE2D_TK(tex, sampler_tex, uv) tex.Sample(sampler_tex, uv)
-    #define SAMPLE2D_GRAD_TK(tex, sampler_tex, uv, dx, dy) tex.SampleGrad(sampler_tex, uv, dx, dy)
     #define SAMPLE2D_GRAD_TK(tex, sampler_tex, uv) tex.SampleGrad(sampler_tex, uv, ddx(uv), ddy(uv))
 #elif defined(_SAMPLERMODE_STOCHASTIC)
     #define SAMPLE2D_TK(tex, sampler_tex, uv) StochSample_float(tex, uv, sampler_tex)
-    #define SAMPLE2D_GRAD_TK(tex, sampler_tex, uv, dx, dy) StochSample_float(tex, uv, sampler_tex)
     #define SAMPLE2D_GRAD_TK(tex, sampler_tex, uv) StochSample_float(tex, uv, sampler_tex)
 #else
     #define SAMPLE2D_TK(tex, sampler_tex, uv) tex.Sample(sampler_tex, uv)
-    #define SAMPLE2D_GRAD_TK(tex, sampler_tex, uv, dx, dy) tex.SampleGrad(sampler_tex, uv, dx, dy)
     #define SAMPLE2D_GRAD_TK(tex, sampler_tex, uv) tex.SampleGrad(sampler_tex, uv, ddx(uv), ddy(uv))
 #endif
 
@@ -338,6 +335,14 @@ float3 pos, float3 normal, float3 worldTangent, float3 worldBinormal, int2 pixel
         float3 texNormal = UNPACK_NORMAL_TK(SAMPLE2D_TK(tex, samplerState, uv * uv_ST.xy + uv_ST.zw));
         return normalize(localToWorld(worldTangent, normal, worldBinormal, float3(texNormal.x, texNormal.z, -texNormal.y)));
     #endif
+}
+
+inline float2 SAMPLE2D_PALLAX_TK(Texture2D tex, SamplerState samplerState, float2 uv, float4 uv_ST,
+float3 pos, float3 normal, int2 pixelId, float3 viewDir)
+{
+    float height = SAMPLE2D_MAINTEX_TK(tex, samplerState, uv, uv_ST, pos, normal, pixelId) * _PallaxScale * 0.05;
+    float2 offset = viewDir.xz / viewDir.y * height ;
+    return offset;
 }
 
 #endif

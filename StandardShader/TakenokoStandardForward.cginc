@@ -37,6 +37,12 @@ Texture2D _EmissionMap;
 SamplerState sampler_EmissionMap;
 float4 _EmissionMap_ST;
 
+float _PallaxScale;
+Texture2D _PallaxMap;
+SamplerState sampler_PallaxMap;
+float4 _PallaxMap_ST;
+
+
 float _LightmapPower;
 
 #if defined(_TK_THINFILM_ON)
@@ -147,25 +153,16 @@ fixed4 FragTKStandardForwardBase(TKStandardVertexOutput i) : SV_Target
     float3 normalWorld = normalize(i.worldNormal);
 
     float3 viewDirection = normalize(_WorldSpaceCameraPos - i.worldPos);
-    // float3 normal = UnpackNormal(_BumpMap.Sample(sampler_BumpMap, i.uv));
-    // normal = normalize(normal);
-    // normalWorld = localToWorld(i.worldTangent, i.worldNormal, i.worldBinormal, float3(normal.x, normal.z, -normal.y));
-    
-    //float3 normalWorld = i.worldNormal;
 
     int2 pixelId = int2(i.screenPos.xy * _ScreenParams.xy);
-    MaterialParameter matParam;
     float3 mappingPos = i.worldPos;
-    #if defined(_MAPPING_POS_OBJ)
-        mappingPos = i.objectPos;
-    #endif
-    
     float3 mappingNormal = normalWorld;
-    #if defined(_MAPPING_NORMAL_OBJ)
-        mappingNormal = i.objectNormal;
-    #endif
+    float3 mappingViewDir = worldToLocal(i.worldTangent, i.worldNormal, i.worldBinormal, viewDirection);
+    //float3 mappingViewDir = viewDirection;
 
-    SetMaterialParameterTK(matParam, i.uv, mappingPos, mappingNormal, pixelId);
+    MaterialParameter matParam;
+
+    SetMaterialParameterTK(matParam, i.uv, mappingPos, mappingNormal, pixelId, mappingViewDir);
 
     normalWorld = normalize(SAMPLE2D_NORMALMAP_TK(_BumpMap, sampler_BumpMap, i.uv, _BumpMap_ST,
     i.worldPos, normalWorld, i.worldTangent, i.worldBinormal, pixelId));
@@ -262,6 +259,7 @@ fixed4 FragTKStandardForwardBase(TKStandardVertexOutput i) : SV_Target
 
     //Debug
     #if defined(_DEBUGMODE_NORMAL)
+        //normalWorld = worldToLocal(i.worldTangent, i.worldNormal, i.worldBinormal, viewDirection);
         shade_color = normalWorld * 0.5 + 0.5;
     #elif defined(_DEBUGMODE_BASECOLOR)
         shade_color = matParam.basecolor;

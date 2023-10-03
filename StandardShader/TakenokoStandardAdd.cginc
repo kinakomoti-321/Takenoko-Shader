@@ -35,6 +35,11 @@ Texture2D _EmissionMap;
 SamplerState sampler_EmissionMap;
 float4 _EmissionMap_ST;
 
+float _PallaxScale;
+Texture2D _PallaxMap;
+SamplerState sampler_PallaxMap;
+float4 _PallaxMap_ST;
+
 float _LightmapPower;
 
 
@@ -103,7 +108,7 @@ TKStandardVertexOutput VertTKStandardAdd(TKStandardVertexInput v)
     o.worldPos = worldPos;
     o.worldNormal = worldNormal;
     o.worldTangent = UnityObjectToWorldNormal(v.tangent);
-    o.worldBinormal = cross(o.worldNormal, o.worldTangent) * v.tangent.w;
+    o.worldBinormal = normalize(cross(o.worldTangent, o.worldNormal) * v.tangent.w);
     float4 scpos = ComputeScreenPos(o.pos);
     o.screenPos = scpos.xy / scpos.w;
     o.objectPos = v.vertex.xyz;
@@ -130,15 +135,18 @@ fixed4 FragTKStandardAdd(TKStandardVertexOutput i) : SV_Target
     float3 normalWorld = i.worldNormal;
 
     float3 viewDirection = normalize(_WorldSpaceCameraPos - i.worldPos);
-    float3 normal = UnpackNormal(_BumpMap.Sample(sampler_BumpMap, i.uv));
-    normal = normalize(normal);
-    normalWorld = localToWorld(i.worldTangent, i.worldNormal, i.worldBinormal, float3(normal.x, normal.z, -normal.y));
+    // float3 normal = UnpackNormal(_BumpMap.Sample(sampler_BumpMap, i.uv));
+    // normal = normalize(normal);
+    // normalWorld = localToWorld(i.worldTangent, i.worldNormal, i.worldBinormal, float3(normal.x, normal.z, -normal.y));
     
-    normalWorld = normalize(normalWorld);
-
+    // normalWorld = normalize(normalWorld);
     int2 pixelId = int2(i.screenPos.xy * _ScreenParams.xy);
+    float3 mappingPos = i.worldPos;
+    float3 mappingNormal = normalWorld;
+    float3 mappingViewDir = -worldToLocal(i.worldTangent, i.worldNormal, i.worldNormal, viewDirection);
+
     MaterialParameter matParam;
-    SetMaterialParameterTK(matParam, i.uv, i.worldPos, normalWorld, pixelId);
+    SetMaterialParameterTK(matParam, i.uv, mappingPos, mappingNormal, pixelId, mappingViewDir);
 
     float3 lightDir;
     if (_WorldSpaceLightPos0.w > 0.0)
