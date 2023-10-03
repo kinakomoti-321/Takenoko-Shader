@@ -110,7 +110,6 @@
 
             #pragma multi_compile _DEBUGMODE_NONE _DEBUGMODE_BASECOLOR _DEBUGMODE_NORMAL
 
-
             #pragma shader_feature_local _MAPPING_POS_OBJ
 
             #pragma shader_feature_local _TK_THINFILM_ON
@@ -119,7 +118,7 @@
             #pragma shader_feature_local _SHMODE_NONLINER
             #pragma shader_feature_local _SPECULAR_OCCLUSION
             #pragma shader_feature_local _SH_SPECULAR
-            
+
             #pragma shader_feature_local _VERTEX_SH_ON
 
             #pragma shader_feature _NORMALMAP_ON
@@ -135,32 +134,31 @@
             ENDCG
         }
 
-        // Pass
-        // {
-        //     Name "ForwardAdd"
-        //     Tags { "LightMode" = "ForwardAdd" }
-        //     Blend One One
-        //     ZWrite Off
-        //     CGPROGRAM
+        Pass
+        {
+            Name "ForwardAdd"
+            Tags { "LightMode" = "ForwardAdd" }
+            Blend One One
+            ZWrite Off
+            CGPROGRAM
 
-        //     #pragma vertex VertTKStandardAdd
-        //     #pragma fragment FragTKStandardAdd
-        //     #pragma multi_compile_local _LIGHTMAPMODE_NONE _LIGHTMAPMODE_SH _LIGHTMAPMODE_MONOSH
+            #pragma vertex VertTKStandardAdd
+            #pragma fragment FragTKStandardAdd
 
-        //     #pragma shader_feature_local _TK_THINFILM_ON
-        //     #pragma shader_feature_local _TK_THINFILM_USE_MAP
+            #pragma multi_compile_local _MAPPINGMODE_NONE _MAPPINGMODE_TRIPLANAR _MAPPINGMODE_BIPLANAR _MAPPINGMODE_DITHER_TRIPLANAR _MAPPINGMODE_XYZMASK
+            #pragma multi_compile_local _SAMPLERMODE_NONE _SAMPLERMODE_STOCHASTIC _SAMPLERMODE_HEX _SAMPLERMODE_VOLONOI
+            #pragma multi_compile_local _PARALLAXMODE_NONE _PARALLAXMODE_SIMPLE _PARALLAXMODE_STEEP
 
-        //     #pragma shader_feature_local _SHMODE_NONLINER
-        //     #pragma shader_feature_local _SPECULAR_OCCLUSION
-        //     #pragma shader_feature_local _SH_SPECULAR
+            #pragma shader_feature_local _MAPPING_POS_OBJ
 
-        //     #pragma shader_feature _NORMALMAP_ON
+            #pragma shader_feature_local _TK_THINFILM_ON
+            #pragma shader_feature_local _TK_THINFILM_USE_MAP
 
-        //     #include "UnityCG.cginc"
-        //     #include "TakenokoStandardAdd.cginc"
-        
-        //     ENDCG
-        // }
+            #include "UnityCG.cginc"
+            #include "TakenokoStandardAdd.cginc"
+            
+            ENDCG
+        }
 
         Pass
         {

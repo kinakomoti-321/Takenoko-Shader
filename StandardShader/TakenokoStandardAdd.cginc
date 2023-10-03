@@ -3,7 +3,7 @@
 #pragma target 3.0
 #pragma multi_compile_instancing
 #pragma multi_compile_fog
-#pragma multi_compile_add
+#pragma multi_compile_fwdadd_fullshadows
 #include "UnityShaderVariables.cginc"
 #include "UnityShaderUtilities.cginc"
 
@@ -40,9 +40,6 @@ Texture2D _PallaxMap;
 SamplerState sampler_PallaxMap;
 float4 _PallaxMap_ST;
 
-float _LightmapPower;
-
-
 #if defined(_TK_THINFILM_ON)
     float _ThinFilmMiddleIOR;
     float _ThinFilmMiddleThickness;
@@ -75,19 +72,15 @@ struct TKStandardVertexOutput
     float3 worldNormal : TEXCOORD1;
     float3 worldPos : TEXCOORD2;
     float4 lightmapUV : TEXCOORD3;
-    UNITY_SHADOW_COORDS(4)
-    UNITY_FOG_COORDS(5)
-
-    #ifndef LIGHTMAP_ON
-        #if UNITY_SHOULD_SAMPLE_SH
-            half3 sh : TEXCOORD6;
-        #endif
-    #endif
+    //UNITY_SHADOW_COORDS(4)
+    UNITY_LIGHTING_COORDS(4, 5)
+    UNITY_FOG_COORDS(6)
 
     float3 worldTangent : TEXCOORD7;
     float3 worldBinormal : TEXCOORD8;
     float2 screenPos : TEXCOORD9;
     float3 objectPos : TEXCOORD10;
+    float3 objectNormal : TEXCOORD11;
 
     UNITY_VERTEX_INPUT_INSTANCE_ID
     UNITY_VERTEX_OUTPUT_STEREO
@@ -108,10 +101,11 @@ TKStandardVertexOutput VertTKStandardAdd(TKStandardVertexInput v)
     o.worldPos = worldPos;
     o.worldNormal = worldNormal;
     o.worldTangent = UnityObjectToWorldNormal(v.tangent);
-    o.worldBinormal = normalize(cross(o.worldTangent, o.worldNormal) * v.tangent.w);
+    o.worldBinormal = cross(o.worldNormal, o.worldTangent) * v.tangent.w;
     float4 scpos = ComputeScreenPos(o.pos);
     o.screenPos = scpos.xy / scpos.w;
     o.objectPos = v.vertex.xyz;
+    o.objectNormal = normalize(v.normal.xyz);
 
     #ifdef DYNAMICLIGHTMAP_ON
         o.lightmapUV.zw = v.texcoord2.xy * unity_DynamicLightmapST.xy + unity_DynamicLightmapST.zw;
@@ -120,34 +114,37 @@ TKStandardVertexOutput VertTKStandardAdd(TKStandardVertexInput v)
     #ifdef LIGHTMAP_ON
         o.lightmapUV.xy = v.texcoord1.xy * unity_LightmapST.xy + unity_LightmapST.zw;
     #endif
+
+    UNITY_TRANSFER_LIGHTING(o, v.texcoord1.xy);
     
-    UNITY_TRANSFER_SHADOW(o, v.texcoord1.xy);
+    //UNITY_TRANSFER_SHADOW(o, v.texcoord1.xy);
     UNITY_TRANSFER_FOG(o, o.pos);
     return o;
 }
-
-
 fixed4 FragTKStandardAdd(TKStandardVertexOutput i) : SV_Target
 {
     float3 shade_color = 0;
 
     float3 worldPos = i.worldPos;
-    float3 normalWorld = i.worldNormal;
+    float3 normalWorld = normalize(i.worldNormal);
 
     float3 viewDirection = normalize(_WorldSpaceCameraPos - i.worldPos);
-    // float3 normal = UnpackNormal(_BumpMap.Sample(sampler_BumpMap, i.uv));
-    // normal = normalize(normal);
-    // normalWorld = localToWorld(i.worldTangent, i.worldNormal, i.worldBinormal, float3(normal.x, normal.z, -normal.y));
-    
-    // normalWorld = normalize(normalWorld);
-    int2 pixelId = int2(i.screenPos.xy * _ScreenParams.xy);
-    float3 mappingPos = i.worldPos;
-    float3 mappingNormal = normalWorld;
-    float3 mappingViewDir = -worldToLocal(i.worldTangent, i.worldNormal, i.worldNormal, viewDirection);
+
+    MappingInfoTK mapInfo;
+
+    mapInfo.pixelId = int2(i.screenPos.xy * _ScreenParams.xy);
+    mapInfo.worldPos = i.worldPos;
+    mapInfo.worldNormal = normalWorld;
+    mapInfo.worldTangent = i.worldTangent;
+    mapInfo.worldBinormal = i.worldBinormal;
+    mapInfo.viewDir = viewDirection;
+    mapInfo.uv = i.uv;
 
     MaterialParameter matParam;
-    SetMaterialParameterTK(matParam, i.uv, mappingPos, mappingNormal, pixelId, mappingViewDir);
-
+    float3 shadingNormal;
+    SetMaterialParameterTK(matParam, mapInfo, shadingNormal);
+    normalWorld = shadingNormal;
+    
     float3 lightDir;
     if (_WorldSpaceLightPos0.w > 0.0)
     {
@@ -160,7 +157,7 @@ fixed4 FragTKStandardAdd(TKStandardVertexOutput i) : SV_Target
 
     lightDir = normalize(lightDir);
 
-    UNITY_LIGHT_ATTENUATION(atten, i, worldPos)
+    UNITY_LIGHT_ATTENUATION(attenuation, i, i.worldPos);
 
     UnityGI gi;
     UNITY_INITIALIZE_OUTPUT(UnityGI, gi);
@@ -174,14 +171,14 @@ fixed4 FragTKStandardAdd(TKStandardVertexOutput i) : SV_Target
     giInput.light = gi.light;
     giInput.worldPos = worldPos;
     giInput.worldViewDir = viewDirection;
-    giInput.atten = atten;
+    giInput.atten = attenuation;
 
     float3 diffuse;
     float3 specular;
     EvaluateBSDF_TK(diffuse, specular, normalWorld, giInput, matParam);
 
     shade_color = diffuse * (1.0 - matParam.metallic) + specular;
-
+    //shade_color = attenuation;
     return fixed4(shade_color, 1.0);
 }
 #endif
