@@ -337,40 +337,45 @@ float3 pos, float3 normal, float3 worldTangent, float3 worldBinormal, int2 pixel
     #endif
 }
 
+//https://learnopengl.com/Advanced-Lighting/Parallax-Mapping
 inline float2 SAMPLE2D_PALLAX_TK(Texture2D tex, SamplerState samplerState, float2 uv, float4 uv_ST,
 float3 pos, float3 normal, int2 pixelId, float3 viewDir)
 {
-    // float height = SAMPLE2D_MAINTEX_TK(tex, samplerState, uv, uv_ST, pos, normal, pixelId) * _PallaxScale * 0.05;
-    // float2 offset = viewDir.xz / viewDir.y * height ;
-    // return offset;
+    #if defined(_PARALLAXMODE_NONE)
+        return float2(0, 0);
+    #elif defined(_PARALLAXMODE_SIMPLE)
+        float height = SAMPLE2D_MAINTEX_TK(tex, samplerState, uv, uv_ST, pos, normal, pixelId) * _PallaxScale * 0.05;
+        float2 offset = viewDir.xz / viewDir.y * height ;
+        return offset;
+    #elif defined(_PARALLAXMODE_STEEP)
+        const float numLayar = 10;
+        float layerDepth = 1.0 / numLayar;
+        float currentLayerDepth = 0.0;
+        float2 P = viewDir.xz * _PallaxScale * 0.1;
+        float2 deltaTexCoords = P / numLayar;
 
-    const float numLayar = 10;
-    float layerDepth = 1.0 / numLayar;
-    float currentLayerDepth = 0.0;
-    float2 P = viewDir.xz * _PallaxScale;
-    float2 deltaTexCoords = P / numLayar;
+        float2 currentTexCoords = uv;
+        float currentDepthMapValue = (1.0 - SAMPLE2D_MAINTEX_TK(tex, samplerState, uv, uv_ST, pos, normal, pixelId).r);
 
-    float2 currentTexCoords = uv;
-    float currentDepthMapValue = (1.0 - SAMPLE2D_MAINTEX_TK(tex, samplerState, uv, uv_ST, pos, normal, pixelId).r);
+        [unroll]
+        for (int i = 0; 10 > i; i++)
+        {
+            currentTexCoords -= deltaTexCoords;
+            currentDepthMapValue = (1.0 - SAMPLE2D_MAINTEX_TK(tex, samplerState, currentTexCoords, uv_ST, pos, normal, pixelId).r);
+            currentLayerDepth += layerDepth;
 
-    [unroll]
-    for (int i = 0; 10 > i; i++)
-    {
-        currentTexCoords -= deltaTexCoords;
-        currentDepthMapValue = (1.0 - SAMPLE2D_MAINTEX_TK(tex, samplerState, currentTexCoords, uv_ST, pos, normal, pixelId).r);
-        currentLayerDepth += layerDepth;
+            if (currentLayerDepth > currentDepthMapValue)break;
+        }
+        float2 prevTexCoords = currentTexCoords + deltaTexCoords;
 
-        if (currentLayerDepth > currentDepthMapValue)break;
-    }
-    float2 prevTexCoords = currentTexCoords + deltaTexCoords;
+        float afterDepth = currentDepthMapValue - currentLayerDepth;
+        float beforeDepth = (1.0 - SAMPLE2D_MAINTEX_TK(tex, samplerState, prevTexCoords, uv_ST, pos, normal, pixelId).r) - currentLayerDepth + layerDepth;
+        
+        float weight = afterDepth / (afterDepth - beforeDepth);
+        float2 finalTexCoords = prevTexCoords * weight + currentTexCoords * (1.0 - weight);
 
-    float afterDepth = currentDepthMapValue - currentLayerDepth;
-    float beforeDepth = (1.0 - SAMPLE2D_MAINTEX_TK(tex, samplerState, prevTexCoords, uv_ST, pos, normal, pixelId).r) - currentLayerDepth + layerDepth;
-    
-    float weight = afterDepth / (afterDepth - beforeDepth);
-    float2 finalTexCoords = prevTexCoords * weight + currentTexCoords * (1.0 - weight);
-
-    return finalTexCoords - uv;
+        return finalTexCoords - uv;
+    #endif
 }
 
 #endif

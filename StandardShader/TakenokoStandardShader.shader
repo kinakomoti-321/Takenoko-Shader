@@ -20,7 +20,7 @@
 
     Properties
     {
-        [Enum(None, 0, Triplanar, 1, Biplanar, 2, DitheredTriplanar, 3)] _MappingMode ("Mapping Mode", Int) = 0
+        [Enum(None, 0, Triplanar, 1, Biplanar, 2, DitheredTriplanar, 3, XYZMask, 4)] _MappingMode ("Mapping Mode", Int) = 0
         [Enum(None, 0, Stochastic, 1, HexTiling, 2, Volonoi, 3)] _SamplerMode ("Sampler Mode", Int) = 0
         [Toggle(_MAPPING_POS_OBJ)] _MappingPosObj ("Mapping Position Object", Float) = 0.0
 
@@ -40,7 +40,7 @@
 
         _PallaxScale ("Scale", Range(0.0, 1.0)) = 0.02
         _PallaxMap ("Pallax Map", 2D) = "black" { }
-        [Enum(Simple, 0, Steep, 1)] _PallaxMode ("Pallax Mode", Int) = 0
+        [Enum(None, 0 Simple, 1, Steep, 2)] _PallaxMode ("Pallax Mode", Int) = 0
 
         [Toggle(_EMISSION)] _Emission ("Emission", Float) = 0.0
         [Enum(None, 0, RealTime, 1, Bake, 2)] _EmissionMode ("Emission Mode", Int) = 0
@@ -80,6 +80,8 @@
         _LightProbeSH_Power ("Light Probe SH Power", Range(0.0, 1.0)) = 1.0
         _IBLReflection_Power ("IBL Reflection Power", Range(0.0, 1.0)) = 1.0
         _RealTimeLight_Power ("Real Time Light Power", Range(0.0, 1.0)) = 1.0
+        _Specular_Power ("Specular Power", Range(0.0, 2.0)) = 1.0
+        _Diffuse_Power ("Diffuse Power", Range(0.0, 2.0)) = 1.0
 
 
         [Enum(None, 0, BaseColor, 1, Normal, 2)] _DebugMode ("Debug Mode", Int) = 0
@@ -102,9 +104,9 @@
             #pragma vertex VertTKStandardForwardBase
             #pragma fragment FragTKStandardForwardBase
             #pragma multi_compile_local _LIGHTMAPMODE_NONE _LIGHTMAPMODE_SH _LIGHTMAPMODE_MONOSH
-            #pragma multi_compile_local _MAPPINGMODE_NONE _MAPPINGMODE_TRIPLANAR _MAPPINGMODE_BIPLANAR _MAPPINGMODE_DITHER_TRIPLANAR
+            #pragma multi_compile_local _MAPPINGMODE_NONE _MAPPINGMODE_TRIPLANAR _MAPPINGMODE_BIPLANAR _MAPPINGMODE_DITHER_TRIPLANAR _MAPPINGMODE_XYZMASK
             #pragma multi_compile_local _SAMPLERMODE_NONE _SAMPLERMODE_STOCHASTIC _SAMPLERMODE_HEX _SAMPLERMODE_VOLONOI
-            #pragma multi_compile_local _PALLAXMODE_SIMPLE _PALLAXMODE_STEEP
+            #pragma multi_compile_local _PARALLAXMODE_NONE _PARALLAXMODE_SIMPLE _PARALLAXMODE_STEEP
 
             #pragma multi_compile _DEBUGMODE_NONE _DEBUGMODE_BASECOLOR _DEBUGMODE_NORMAL
 
@@ -130,32 +132,32 @@
             ENDCG
         }
 
-        Pass
-        {
-            Name "ForwardAdd"
-            Tags { "LightMode" = "ForwardAdd" }
-            Blend One One
-            ZWrite Off
-            CGPROGRAM
+        // Pass
+        // {
+        //     Name "ForwardAdd"
+        //     Tags { "LightMode" = "ForwardAdd" }
+        //     Blend One One
+        //     ZWrite Off
+        //     CGPROGRAM
 
-            #pragma vertex VertTKStandardAdd
-            #pragma fragment FragTKStandardAdd
-            #pragma multi_compile_local _LIGHTMAPMODE_NONE _LIGHTMAPMODE_SH _LIGHTMAPMODE_MONOSH
+        //     #pragma vertex VertTKStandardAdd
+        //     #pragma fragment FragTKStandardAdd
+        //     #pragma multi_compile_local _LIGHTMAPMODE_NONE _LIGHTMAPMODE_SH _LIGHTMAPMODE_MONOSH
 
-            #pragma shader_feature_local _TK_THINFILM_ON
-            #pragma shader_feature_local _TK_THINFILM_USE_MAP
+        //     #pragma shader_feature_local _TK_THINFILM_ON
+        //     #pragma shader_feature_local _TK_THINFILM_USE_MAP
 
-            #pragma shader_feature_local _SHMODE_NONLINER
-            #pragma shader_feature_local _SPECULAR_OCCLUSION
-            #pragma shader_feature_local _SH_SPECULAR
+        //     #pragma shader_feature_local _SHMODE_NONLINER
+        //     #pragma shader_feature_local _SPECULAR_OCCLUSION
+        //     #pragma shader_feature_local _SH_SPECULAR
 
-            #pragma shader_feature _NORMALMAP_ON
+        //     #pragma shader_feature _NORMALMAP_ON
 
-            #include "UnityCG.cginc"
-            #include "TakenokoStandardAdd.cginc"
-            
-            ENDCG
-        }
+        //     #include "UnityCG.cginc"
+        //     #include "TakenokoStandardAdd.cginc"
+        
+        //     ENDCG
+        // }
 
         Pass
         {

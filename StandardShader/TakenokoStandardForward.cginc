@@ -154,20 +154,24 @@ fixed4 FragTKStandardForwardBase(TKStandardVertexOutput i) : SV_Target
 
     float3 viewDirection = normalize(_WorldSpaceCameraPos - i.worldPos);
 
-    int2 pixelId = int2(i.screenPos.xy * _ScreenParams.xy);
-    float3 mappingPos = i.worldPos;
-    float3 mappingNormal = normalWorld;
-    float3 mappingViewDir = worldToLocal(i.worldTangent, i.worldNormal, i.worldBinormal, viewDirection);
-    //float3 mappingViewDir = viewDirection;
+    MappingInfoTK mapInfo;
+
+    mapInfo.pixelId = int2(i.screenPos.xy * _ScreenParams.xy);
+    mapInfo.worldPos = i.worldPos;
+    mapInfo.worldNormal = normalWorld;
+    mapInfo.worldTangent = i.worldTangent;
+    mapInfo.worldBinormal = i.worldBinormal;
+    mapInfo.viewDir = viewDirection;
+    mapInfo.uv = i.uv;
+    // float3 mappingViewDir = worldToLocal(i.worldTangent, i.worldNormal, i.worldBinormal, viewDirection);
 
     MaterialParameter matParam;
+    float3 shadingNormal;
+    SetMaterialParameterTK(matParam, mapInfo, shadingNormal);
 
-    SetMaterialParameterTK(matParam, i.uv, mappingPos, mappingNormal, pixelId, mappingViewDir);
-
-    normalWorld = normalize(SAMPLE2D_NORMALMAP_TK(_BumpMap, sampler_BumpMap, i.uv, _BumpMap_ST,
-    i.worldPos, normalWorld, i.worldTangent, i.worldBinormal, pixelId));
-    //normalWorld = localToWorld(i.worldTangent, i.worldNormal, i.worldBinormal, float3(normalmap.x, normalmap.z, -normalmap.y));
-    // normalWorld = SAMPLE2D_NORMALMAP_TK(_BumpMap, sampler_BumpMap, i.uv, i.worldPos, normalWorld, pixelId);
+    // normalWorld = normalize(SAMPLE2D_NORMALMAP_TK(_BumpMap, sampler_BumpMap, i.uv, _BumpMap_ST,
+    // i.worldPos, normalWorld, i.worldTangent, i.worldBinormal, mapInfo.pixelId));
+    normalWorld = shadingNormal;
 
 
     float3 lightDir = _WorldSpaceLightPos0.xyz;

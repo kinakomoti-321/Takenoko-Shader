@@ -226,19 +226,36 @@ UnityGIInput giInput, MaterialParameter matParam)
     specular += specularGI;
 }
 
-void SetMaterialParameterTK(inout MaterialParameter matParam, float2 uv, float3 worldPos, float3 worldNormal, float2 pixelId, float3 viewDir)
+
+struct MappingInfoTK
 {
-    float2 pallaxoffset = SAMPLE2D_PALLAX_TK(_PallaxMap, sampler_PallaxMap, uv, _PallaxMap_ST, worldPos, worldNormal, pixelId, viewDir);
+    float2 uv;
+    float3 worldPos;
+    float3 worldNormal;
+    float3 worldTangent;
+    float3 worldBinormal;
+    float2 pixelId;
+    float3 viewDir;
+};
+
+void SetMaterialParameterTK(inout MaterialParameter matParam, MappingInfoTK mapInfo, inout float3 shadingNormal)
+{
+    float3 viewDir = worldToLocal(mapInfo.worldTangent, mapInfo.worldNormal, mapInfo.worldBinormal, mapInfo.viewDir);
+    float2 pallaxoffset = SAMPLE2D_PALLAX_TK(_PallaxMap, sampler_PallaxMap, mapInfo.uv, _PallaxMap_ST, mapInfo.worldPos, mapInfo.worldNormal, mapInfo.pixelId, viewDir);
     float4 uvOffset = float4(0, 0, pallaxoffset);
-    matParam.basecolor = _Color * SAMPLE2D_MAINTEX_TK(_MainTex, sampler_MainTex, uv, _MainTex_ST + uvOffset, worldPos, worldNormal, pixelId);
-    matParam.roughness = _Roughness * SAMPLE2D_MAINTEX_TK(_RoughnessMap, sampler_RoughnessMap, uv, _RoughnessMap_ST + uvOffset, worldPos, worldNormal, pixelId).r;
-    matParam.metallic = _Metallic * SAMPLE2D_MAINTEX_TK(_MetallicGlossMap, sampler_MetallicGlossMap, uv, _MetallicGlossMap_ST + uvOffset, worldPos, worldNormal, pixelId).r;
 
-    matParam.emission = _EmissionColor * SAMPLE2D_MAINTEX_TK(_EmissionMap, sampler_EmissionMap, uv, _EmissionMap_ST + uvOffset, worldPos, worldNormal, pixelId);
+    //Basecolor
+    matParam.basecolor = _Color * SAMPLE2D_MAINTEX_TK(_MainTex, sampler_MainTex, mapInfo.uv, _MainTex_ST + uvOffset, mapInfo.worldPos, mapInfo.worldNormal, mapInfo.pixelId);
+    matParam.roughness = _Roughness * SAMPLE2D_MAINTEX_TK(_RoughnessMap, sampler_RoughnessMap, mapInfo.uv, _RoughnessMap_ST + uvOffset, mapInfo.worldPos, mapInfo.worldNormal, mapInfo.pixelId).r;
+    matParam.metallic = _Metallic * SAMPLE2D_MAINTEX_TK(_MetallicGlossMap, sampler_MetallicGlossMap, mapInfo.uv, _MetallicGlossMap_ST + uvOffset, mapInfo.worldPos, mapInfo.worldNormal, mapInfo.pixelId).r;
 
+    matParam.emission = _EmissionColor * SAMPLE2D_MAINTEX_TK(_EmissionMap, sampler_EmissionMap, mapInfo.uv, _EmissionMap_ST + uvOffset, mapInfo.worldPos, mapInfo.worldNormal, mapInfo.pixelId);
+
+    shadingNormal = normalize(SAMPLE2D_NORMALMAP_TK(_BumpMap, sampler_BumpMap, mapInfo.uv, _BumpMap_ST + uvOffset,
+    mapInfo.worldPos, mapInfo.worldNormal, mapInfo.worldTangent, mapInfo.worldBinormal, mapInfo.pixelId));
     //ThinFilm Parametor
     #if defined(_TK_THINFILM_ON)
-        float thickness_value = SAMPLE2D_MAINTEX_TK(_ThinFilmMiddleThicknessMap, sampler_MainTex, uv, _ThinFilmMiddleThicknessMap_ST + uvOffset, worldPos, worldNormal, pixelId) * _ThinFilmMiddleThickness;
+        float thickness_value = SAMPLE2D_MAINTEX_TK(_ThinFilmMiddleThicknessMap, sampler_MainTex, mapInfo.uv, _ThinFilmMiddleThicknessMap_ST + uvOffset, mapInfo.worldPos, mapInfo.worldNormal, mapInfo.pixelId) * _ThinFilmMiddleThickness;
         float thickness = lerp(_ThinFilmMiddleThicknessMin, _ThinFilmMiddleThicknessMax, thickness_value); //nm
 
         matParam.middle_thickness = thickness;
