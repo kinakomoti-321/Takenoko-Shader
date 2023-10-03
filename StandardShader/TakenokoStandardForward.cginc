@@ -95,7 +95,7 @@ struct TKStandardVertexOutput
     UNITY_FOG_COORDS(5)
 
     #ifndef LIGHTMAP_ON
-        #if UNITY_SHOULD_SAMPLE_SH
+        #if _VERTEX_SH_ON
             half3 sh : TEXCOORD6;
         #endif
     #endif
@@ -163,14 +163,10 @@ fixed4 FragTKStandardForwardBase(TKStandardVertexOutput i) : SV_Target
     mapInfo.worldBinormal = i.worldBinormal;
     mapInfo.viewDir = viewDirection;
     mapInfo.uv = i.uv;
-    // float3 mappingViewDir = worldToLocal(i.worldTangent, i.worldNormal, i.worldBinormal, viewDirection);
 
     MaterialParameter matParam;
     float3 shadingNormal;
     SetMaterialParameterTK(matParam, mapInfo, shadingNormal);
-
-    // normalWorld = normalize(SAMPLE2D_NORMALMAP_TK(_BumpMap, sampler_BumpMap, i.uv, _BumpMap_ST,
-    // i.worldPos, normalWorld, i.worldTangent, i.worldBinormal, mapInfo.pixelId));
     normalWorld = shadingNormal;
 
 
@@ -263,7 +259,6 @@ fixed4 FragTKStandardForwardBase(TKStandardVertexOutput i) : SV_Target
 
     //Debug
     #if defined(_DEBUGMODE_NORMAL)
-        //normalWorld = worldToLocal(i.worldTangent, i.worldNormal, i.worldBinormal, viewDirection);
         shade_color = normalWorld * 0.5 + 0.5;
     #elif defined(_DEBUGMODE_BASECOLOR)
         shade_color = matParam.basecolor;

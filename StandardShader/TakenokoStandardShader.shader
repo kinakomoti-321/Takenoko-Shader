@@ -110,6 +110,7 @@
 
             #pragma multi_compile _DEBUGMODE_NONE _DEBUGMODE_BASECOLOR _DEBUGMODE_NORMAL
 
+
             #pragma shader_feature_local _MAPPING_POS_OBJ
 
             #pragma shader_feature_local _TK_THINFILM_ON
@@ -118,6 +119,8 @@
             #pragma shader_feature_local _SHMODE_NONLINER
             #pragma shader_feature_local _SPECULAR_OCCLUSION
             #pragma shader_feature_local _SH_SPECULAR
+            
+            #pragma shader_feature_local _VERTEX_SH_ON
 
             #pragma shader_feature _NORMALMAP_ON
             #pragma shader_feature _EMISSION
