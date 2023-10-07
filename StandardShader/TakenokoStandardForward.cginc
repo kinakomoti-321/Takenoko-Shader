@@ -4,13 +4,13 @@
 #pragma multi_compile_instancing
 #pragma multi_compile_fog
 #pragma multi_compile_fwdbase
+
 #include "UnityShaderVariables.cginc"
 #include "UnityShaderUtilities.cginc"
+#include "../common/matrix.cginc"
 
 #include "AutoLight.cginc"
 #include "Lighting.cginc"
-
-
 
 float4 _Color;
 Texture2D _MainTex;
@@ -52,6 +52,23 @@ float _LightmapPower;
     float _ThinFilmMiddleThicknessMax;
     Texture2D _ThinFilmMiddleThicknessMap;
     float4 _ThinFilmMiddleThicknessMap_ST;
+#endif
+
+#if defined(_TK_CLOTH_ON)
+    float4 _ClothAlbedo1;
+    float4 _ClothAlbedo2;
+    float _ClothIOR1;
+    float _ClothIOR2;
+    float _ClothKd1;
+    float _ClothKd2;
+    float _ClothGammaV1;
+    float _ClothGammaV2;
+    float _ClothGammaS1;
+    float _ClothGammaS2;
+    float _ClothAlpha1;
+    float _ClothAlpha2;
+    float _ClothTangentOffset1;
+    float _ClothTangentOffset2;
 #endif
 
 #if defined(_ADDLIGHTMAP1_ON)
@@ -216,7 +233,20 @@ fixed4 FragTKStandardForwardBase(TKStandardVertexOutput i) : SV_Target
 
     float3 main_diffuse;
     float3 main_specular;
-    EvaluateLighting_TK(main_diffuse, main_specular, normalWorld, giInput, matParam);
+    #if !defined(_TK_CLOTH_ON)
+        EvaluateLighting_TK(main_diffuse, main_specular, normalWorld, giInput, matParam);
+    #else
+        float cosTheta = max(lightDir, normalWorld);
+        float3 u, v, n;
+        n = float3(0, 1, 0);// orthonormalBasis(normalWorld, u, v);
+        v = float3(1, 0, 0);
+        u = float3(0, 0, 1);
+        main_diffuse = ClothBSDF_TK(u, v, n,
+        viewDirection, lightDir, cosTheta, matParam);
+        main_specular = 0;
+        // main_specular = 0;
+        // main_diffuse = v;
+    #endif
 
     #ifdef LIGHTMAP_ON
         float3 lightmapDiffuse = 0;

@@ -2,29 +2,17 @@
 #define TK_STANDARD_BSDF
 
 #include "UnityStandardBRDF.cginc"
+
+#include "TakenokoMaterial.cginc"
 #include "TakenokoSampler.cginc"
 #include "TakenokoThinFilm.cginc"
+#include "TakenokoCloth.cginc"
 #include "../common/constant.cginc"
 #include "../common/color.cginc"
 
 #define HILIGHT_SPECULAR_MAX 65504f
 #define saturateHilight(x) min(x, HILIGHT_SPECULAR_MAX)
 
-struct MaterialParameter
-{
-    float3 basecolor;
-    float roughness;
-    float metallic;
-    float3 emission;
-
-    #if defined(_TK_THINFILM_ON)
-        float top_ior;
-        float middle_ior;
-        float middle_thickness;
-        float3 bottom_ior;
-        float3 bottom_kappa;
-    #endif
-};
 
 // Define
 // struct UnityGIInput
@@ -59,11 +47,6 @@ struct MaterialParameter
 //     half  ndotl; // Deprecated: Ndotl is now calculated on the fly and is no longer stored. Do not used it.
 // };
 
-static inline float3 ShlickFresnelF0(float3 F0, float wdotn)
-{
-    float term1 = 1.0f - wdotn;
-    return F0 + (1.0f - F0) * term1 * term1 * term1 * term1 * term1;
-}
 
 static inline float3 ShlickFresnelF90(float3 F90, float wdotn)
 {
@@ -225,63 +208,6 @@ UnityGIInput giInput, MaterialParameter matParam)
     EvaluateSpecularGI_TK(specularGI, normalWorld, giInput, matParam);
     specular += specularGI;
 }
-
-
-struct MappingInfoTK
-{
-    float2 uv;
-    float3 worldPos;
-    float3 worldNormal;
-    float3 worldTangent;
-    float3 worldBinormal;
-    float2 pixelId;
-    float3 viewDir;
-};
-
-void SetMaterialParameterTK(inout MaterialParameter matParam, MappingInfoTK mapInfo, inout float3 shadingNormal)
-{
-    float3 viewDir = worldToLocal(mapInfo.worldTangent, mapInfo.worldNormal, mapInfo.worldBinormal, mapInfo.viewDir);
-    float2 pallaxoffset = SAMPLE2D_PALLAX_TK(_PallaxMap, sampler_PallaxMap, mapInfo.uv, _PallaxMap_ST, mapInfo.worldPos, mapInfo.worldNormal, mapInfo.pixelId, viewDir);
-    float4 uvOffset = float4(0, 0, pallaxoffset);
-
-    //Basecolor
-    matParam.basecolor = _Color * SAMPLE2D_MAINTEX_TK(_MainTex, sampler_MainTex, mapInfo.uv, _MainTex_ST + uvOffset, mapInfo.worldPos, mapInfo.worldNormal, mapInfo.pixelId);
-    matParam.roughness = _Roughness * SAMPLE2D_MAINTEX_TK(_RoughnessMap, sampler_RoughnessMap, mapInfo.uv, _RoughnessMap_ST + uvOffset, mapInfo.worldPos, mapInfo.worldNormal, mapInfo.pixelId).r;
-    matParam.metallic = _Metallic * SAMPLE2D_MAINTEX_TK(_MetallicGlossMap, sampler_MetallicGlossMap, mapInfo.uv, _MetallicGlossMap_ST + uvOffset, mapInfo.worldPos, mapInfo.worldNormal, mapInfo.pixelId).r;
-
-    matParam.emission = _EmissionColor * SAMPLE2D_MAINTEX_TK(_EmissionMap, sampler_EmissionMap, mapInfo.uv, _EmissionMap_ST + uvOffset, mapInfo.worldPos, mapInfo.worldNormal, mapInfo.pixelId);
-
-    shadingNormal = normalize(SAMPLE2D_NORMALMAP_TK(_BumpMap, sampler_BumpMap, mapInfo.uv, _BumpMap_ST + uvOffset,
-    mapInfo.worldPos, mapInfo.worldNormal, mapInfo.worldTangent, mapInfo.worldBinormal, mapInfo.pixelId));
-    //ThinFilm Parametor
-    #if defined(_TK_THINFILM_ON)
-        float thickness_value = SAMPLE2D_MAINTEX_TK(_ThinFilmMiddleThicknessMap, sampler_MainTex, mapInfo.uv, _ThinFilmMiddleThicknessMap_ST + uvOffset, mapInfo.worldPos, mapInfo.worldNormal, mapInfo.pixelId) * _ThinFilmMiddleThickness;
-        float thickness = lerp(_ThinFilmMiddleThicknessMin, _ThinFilmMiddleThicknessMax, thickness_value); //nm
-
-        matParam.middle_thickness = thickness;
-        matParam.middle_ior = _ThinFilmMiddleIOR;
-        matParam.top_ior = 1.0;
-
-        float3 dietric_ior = 1.5;
-        float3 dietric_kappa = 0.0;
-
-        float3 metal_color = clamp(matParam.basecolor.rgb, 0.001, 0.999); //avoid NaN
-        float3 edge_tint = ShlickFresnelF0(metal_color, 0.75); //Magic Number TODO:Find better value
-        float3 metallic_ior = rToIOR(metal_color, edge_tint);
-        float3 metallic_kappa = rToKappa(metal_color, metallic_ior);
-
-        float3 metallic_color = getR(metallic_ior, metallic_kappa);
-        float3 metallic_tint = getG(metallic_ior, metallic_kappa);
-        
-        metallic_ior = rToIOR(metallic_color, metallic_tint);
-        metallic_kappa = rToKappa(metallic_color, metallic_ior);
-
-        matParam.bottom_ior = lerp(dietric_ior, metallic_ior, matParam.metallic);
-        matParam.bottom_kappa = lerp(dietric_kappa, metallic_kappa, matParam.metallic);
-
-    #endif
-}
-
 
 
 #endif

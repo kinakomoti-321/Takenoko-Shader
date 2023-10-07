@@ -54,6 +54,22 @@
         _ThinFilmMiddleThicknessMax ("Middle Layer Thickness Maximum(nm)", Float) = 1000.0
         _ThinFilmMiddleThicknessMap ("Middle Layer Thickness Map", 2D) = "white" { }
 
+        [Toggle(_TK_CLOTH_ON)] _Cloth_ON ("Cloth", Float) = 0.0
+        _ClothAlbedo1 ("Albedo1", Color) = (0.1, 1, 0.4, 1)
+        _ClothAlbedo2 ("Albedo2", Color) = (1.0, 0.0, 0.1, 1)
+        _ClothIOR1 ("IOR1", Float) = 1.345
+        _ClothIOR2 ("IOR2", Float) = 1.345
+        _ClothKd1 ("Kd1", Float) = 0.1
+        _ClothKd2 ("Kd2", Float) = 0.7
+        _ClothGammaV1 ("GammaV1", Float) = 8
+        _ClothGammaV2 ("GammaV2", Float) = 10
+        _ClothGammaS1 ("GammaS1", Float) = 4
+        _ClothGammaS2 ("GammaS2", Float) = 5
+        _ClothAlpha1 ("Alpha1", Float) = 0.86
+        _ClothAlpha2 ("Alpha2", Float) = 0.14
+        _ClothTangentOffset1 ("Tangent Offset1", Vector) = (-25, -25, 25, 25)
+        _ClothTangentOffset2 ("Tangent Offset2", Vector) = (0.0, 0.0, 0.0, 0.0)
+
 
         [HideInInspector] _SrcBlend ("__src", Float) = 1.0
         [HideInInspector] _DstBlend ("__dst", Float) = 0.0
@@ -82,7 +98,6 @@
         _RealTimeLight_Power ("Real Time Light Power", Range(0.0, 1.0)) = 1.0
         _Specular_Power ("Specular Power", Range(0.0, 2.0)) = 1.0
         _Diffuse_Power ("Diffuse Power", Range(0.0, 2.0)) = 1.0
-
 
         [Enum(None, 0, BaseColor, 1, Normal, 2)] _DebugMode ("Debug Mode", Int) = 0
     }
@@ -114,6 +129,8 @@
 
             #pragma shader_feature_local _TK_THINFILM_ON
             #pragma shader_feature_local _TK_THINFILM_USE_MAP
+
+            #pragma shader_feature_local _TK_CLOTH_ON
 
             #pragma shader_feature_local _SHMODE_NONLINER
             #pragma shader_feature_local _SPECULAR_OCCLUSION

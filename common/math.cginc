@@ -35,4 +35,5 @@ inline float2 rotate(float2 p, float theta)
     float s = sin(theta);
     return float2(c * p.x - s * p.y, s * p.x + c * p.y);
 }
+
 #endif

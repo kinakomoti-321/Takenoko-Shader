@@ -89,6 +89,9 @@ public class TakenokoStandardGUI : ShaderGUI
     MaterialProperty ThinFilmMiddleThicknessMin;
     MaterialProperty ThinFilmMiddleThicknessMax;
     MaterialProperty ThinFilmMiddleThicknessMap;
+
+    MaterialProperty Cloth_ON;
+
     MaterialProperty SrcBlend;
     MaterialProperty DstBlend;
     MaterialProperty ZWrite;
@@ -254,6 +257,12 @@ public class TakenokoStandardGUI : ShaderGUI
                 debugMode = (DebugModeEnum)EditorGUILayout.Popup("Debug Mode", (int)debugMode, Enum.GetNames(typeof(DebugModeEnum)));
                 DebugMode.floatValue = (float)debugMode;
             }
+
+            using (new EditorGUILayout.VerticalScope("HelpBox"))
+            {
+                materialEditor.ShaderProperty(Cloth_ON, "Cloth");
+            }
+
         }
         if (EditorGUI.EndChangeCheck())
         {
@@ -295,6 +304,8 @@ public class TakenokoStandardGUI : ShaderGUI
         ThinFilmMiddleThicknessMin = FindProperty("_ThinFilmMiddleThicknessMin", properties);
         ThinFilmMiddleThicknessMax = FindProperty("_ThinFilmMiddleThicknessMax", properties);
         ThinFilmMiddleThicknessMap = FindProperty("_ThinFilmMiddleThicknessMap", properties);
+
+        Cloth_ON = FindProperty("_Cloth_ON", properties);
 
         SrcBlend = FindProperty("_SrcBlend", properties);
         DstBlend = FindProperty("_DstBlend", properties);

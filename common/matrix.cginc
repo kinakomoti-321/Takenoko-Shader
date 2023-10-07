@@ -71,4 +71,34 @@ float3 localToWorld(float3 x, float3 y, float3 z, float3 v)
     return x * v.x + y * v.y + z * v.z;
 }
 
+#define VectorToQuatunion(n, theta) float4(cos(0.5 * theta), n.x * sin(0.5 * theta), n.y * sin(0.5 * theta), n.z * sin(0.5 * theta))
+
+float3 vector_quat_rotate(float3 v, float4 q)
+{
+    return v + 2.0 * cross(q.xyz, cross(q.xyz, v) + q.w * v);
+}
+
+#define copysignf(a, b) (b < 0.0 ? - a : a)
+
+void orthonormalBasis(float3 normal, inout float3 tangent, inout float3 binormal)
+{
+    // float sign = copysignf(1.0f, normal.z);
+    // float a = -1.0f / (sign + normal.z);
+    // float b = normal.x * normal.y * a;
+    // tangent = float3(1.0f + sign * normal.x * normal.x * a, sign * b,
+    // - sign * normal.x);
+    // binormal = float3(b, sign + normal.y * normal.y * a, -normal.y);
+    if (abs(normal[1]) < 0.999f)
+    {
+        tangent = cross(normal, float3(0, 1, 0));
+    }
+    else
+    {
+        tangent = cross(normal, float3(0, 0, -1));
+    }
+    tangent = normalize(tangent);
+    binormal = cross(tangent, normal);
+    binormal = normalize(binormal);
+}
+
 #endif

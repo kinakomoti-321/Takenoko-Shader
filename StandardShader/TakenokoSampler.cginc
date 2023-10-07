@@ -367,21 +367,21 @@ float3 pos, float3 normal, float3 worldTangent, float3 worldBinormal, int2 pixel
 {
     #if defined(_MAPPINGMODE_NONE)
         float3 texNormal = UNPACK_NORMAL_TK(SAMPLE2D_TK(tex, samplerState, uv * uv_ST.xy + uv_ST.zw));
-        return normalize(localToWorld(worldTangent, normal, worldBinormal, float3(texNormal.x, texNormal.z, -texNormal.y)));
+        return normalize(localToWorld(worldTangent, normal, worldBinormal, float3(texNormal.x, texNormal.z, texNormal.y)));
     #elif defined(_MAPPINGMODE_TRIPLANAR)
         return normalize(TriplanarMappingNormal_TK(tex, samplerState, pos, normal, uv_ST));
     #elif defined(_MAPPINGMODE_BIPLANAR)
         float3 texNormal = BilpanarMappingNormal_TK(tex, samplerState, pos, normal, uv_ST);
-        return localToWorld(worldTangent, normal, worldBinormal, float3(texNormal.x, texNormal.z, -texNormal.y));
+        return localToWorld(worldTangent, normal, worldBinormal, float3(texNormal.x, texNormal.z, texNormal.y));
     #elif defined(_MAPPINGMODE_DITHER_TRIPLANAR)
         float3 texNormal = DitherTriplanarMappingNormal_TK(tex, samplerState, pos, normal, pixelId, uv_ST);
-        return normalize(localToWorld(worldTangent, normal, worldBinormal, float3(texNormal.x, texNormal.z, -texNormal.y)));
+        return normalize(localToWorld(worldTangent, normal, worldBinormal, float3(texNormal.x, texNormal.z, texNormal.y)));
     #elif defined(_MAPPINGMODE_XYZMASK)
         float3 texNormal = XYZMask_MappingNormal_TK(tex, samplerState, uv_ST, pos, normal);
-        return normalize(localToWorld(worldTangent, normal, worldBinormal, float3(texNormal.x, texNormal.z, -texNormal.y)));
+        return normalize(localToWorld(worldTangent, normal, worldBinormal, float3(texNormal.x, texNormal.z, texNormal.y)));
     #else
         float3 texNormal = UNPACK_NORMAL_TK(SAMPLE2D_TK(tex, samplerState, uv * uv_ST.xy + uv_ST.zw));
-        return normalize(localToWorld(worldTangent, normal, worldBinormal, float3(texNormal.x, texNormal.z, -texNormal.y)));
+        return normalize(localToWorld(worldTangent, normal, worldBinormal, float3(texNormal.x, texNormal.z, texNormal.y)));
     #endif
 }
 

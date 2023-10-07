@@ -46,6 +46,7 @@ float4 _PallaxMap_ST;
     float _ThinFilmMiddleThicknessMin;
     float _ThinFilmMiddleThicknessMax;
     Texture2D _ThinFilmMiddleThicknessMap;
+    float4 _ThinFilmMiddleThicknessMap_ST;
 #endif
 
 #include "TakenokoLightmap.cginc"
@@ -72,7 +73,6 @@ struct TKStandardVertexOutput
     float3 worldNormal : TEXCOORD1;
     float3 worldPos : TEXCOORD2;
     float4 lightmapUV : TEXCOORD3;
-    //UNITY_SHADOW_COORDS(4)
     UNITY_LIGHTING_COORDS(4, 5)
     UNITY_FOG_COORDS(6)
 
