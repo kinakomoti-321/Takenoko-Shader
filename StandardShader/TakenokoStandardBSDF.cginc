@@ -113,8 +113,15 @@ static inline float3 CalculateF0_TK(MaterialParameter matParam, float cosTheta)
         //Disney BRDF
         return lerp(0.08f, matParam.basecolor, matParam.metallic);
     #else
-        return saturate(fresnel_airy(cosTheta, matParam.bottom_ior, matParam.bottom_kappa,
-        matParam.middle_thickness, matParam.top_ior, matParam.middle_ior));
+        if (matParam.thinFilmMask)
+        {
+            return saturate(fresnel_airy(cosTheta, matParam.bottom_ior, matParam.bottom_kappa,
+            matParam.middle_thickness, matParam.top_ior, matParam.middle_ior));
+        }
+        else
+        {
+            return lerp(0.08f, matParam.basecolor, matParam.metallic);
+        }
     #endif
 }
 

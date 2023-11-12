@@ -23,6 +23,7 @@ struct MaterialParameter
     float3 emission;
 
     #if defined(_TK_THINFILM_ON)
+        bool thinFilmMask;
         float top_ior;
         float middle_ior;
         float middle_thickness;
@@ -94,6 +95,8 @@ void SetMaterialParameterTK(inout MaterialParameter matParam, MappingInfoTK mapI
 
         matParam.bottom_ior = lerp(dietric_ior, metallic_ior, matParam.metallic);
         matParam.bottom_kappa = lerp(dietric_kappa, metallic_kappa, matParam.metallic);
+
+        matParam.thinFilmMask = SAMPLE2D_MAINTEX_TK(_ThinFilmMaskMap, sampler_MainTex, mapInfo.uv, _ThinFilmMaskMap_ST + uvOffset, mapInfo.worldPos, mapInfo.worldNormal, mapInfo.pixelId).r > 0.5;
     #endif
 
     #if defined(_TK_CLOTH_ON)

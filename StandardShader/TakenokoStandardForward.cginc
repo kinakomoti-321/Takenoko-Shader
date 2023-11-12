@@ -46,10 +46,14 @@ float4 _PallaxMap_ST;
 float _LightmapPower;
 
 #if defined(_TK_THINFILM_ON)
+    Texture2D _ThinFilmMaskMap;
+    float4 _ThinFilmMaskMap_ST;
+
     float _ThinFilmMiddleIOR;
     float _ThinFilmMiddleThickness;
     float _ThinFilmMiddleThicknessMin;
     float _ThinFilmMiddleThicknessMax;
+
     Texture2D _ThinFilmMiddleThicknessMap;
     float4 _ThinFilmMiddleThicknessMap_ST;
 #endif

@@ -84,6 +84,7 @@ public class TakenokoStandardGUI : ShaderGUI
     MaterialProperty EmissionMap;
 
     MaterialProperty ThinFilm_ON;
+    MaterialProperty ThinFilmMaskMap;
     MaterialProperty ThinFilmMiddleIOR;
     MaterialProperty ThinFilmMiddleThickness;
     MaterialProperty ThinFilmMiddleThicknessMin;
@@ -91,6 +92,20 @@ public class TakenokoStandardGUI : ShaderGUI
     MaterialProperty ThinFilmMiddleThicknessMap;
 
     MaterialProperty Cloth_ON;
+    MaterialProperty ClothAlbedo1;
+    MaterialProperty ClothAlbedo2;
+    MaterialProperty ClothIOR1;
+    MaterialProperty ClothIOR2;
+    MaterialProperty ClothKd1;
+    MaterialProperty ClothKd2;
+    MaterialProperty ClothGammaV1;
+    MaterialProperty ClothGammaV2;
+    MaterialProperty ClothGammaS1;
+    MaterialProperty ClothGammaS2;
+    MaterialProperty ClothAlpha1;
+    MaterialProperty ClothAlpha2;
+    MaterialProperty ClothTangentOffset1;
+    MaterialProperty ClothTangentOffset2;
 
     MaterialProperty SrcBlend;
     MaterialProperty DstBlend;
@@ -186,6 +201,7 @@ public class TakenokoStandardGUI : ShaderGUI
             {
                 GUILayout.Space(5);
                 materialEditor.ShaderProperty(ThinFilm_ON, "Thin-Film");
+                materialEditor.ShaderProperty(ThinFilmMaskMap, "Mask Map");
                 if (ThinFilm_ON.floatValue > 0.0)
                 {
                     materialEditor.ShaderProperty(ThinFilmMiddleIOR, "IOR");
@@ -261,6 +277,20 @@ public class TakenokoStandardGUI : ShaderGUI
             using (new EditorGUILayout.VerticalScope("HelpBox"))
             {
                 materialEditor.ShaderProperty(Cloth_ON, "Cloth");
+                materialEditor.ShaderProperty(ClothAlbedo1, "Albedo1");
+                materialEditor.ShaderProperty(ClothAlbedo2, "Albedo2");
+                materialEditor.ShaderProperty(ClothIOR1, "IOR1");
+                materialEditor.ShaderProperty(ClothIOR2, "IOR2");
+                materialEditor.ShaderProperty(ClothKd1, "Kd1");
+                materialEditor.ShaderProperty(ClothKd2, "Kd2");
+                materialEditor.ShaderProperty(ClothGammaV1, "GammaV1");
+                materialEditor.ShaderProperty(ClothGammaV2, "GammaV2");
+                materialEditor.ShaderProperty(ClothGammaS1, "GammaS1");
+                materialEditor.ShaderProperty(ClothGammaS2, "GammaS2");
+                materialEditor.ShaderProperty(ClothAlpha1, "Alpha1");
+                materialEditor.ShaderProperty(ClothAlpha2, "Alpha2");
+                materialEditor.ShaderProperty(ClothTangentOffset1, "TangentOffset1");
+                materialEditor.ShaderProperty(ClothTangentOffset2, "TangentOffset2");
             }
 
         }
@@ -299,6 +329,7 @@ public class TakenokoStandardGUI : ShaderGUI
         EmissionMap = FindProperty("_EmissionMap", properties);
 
         ThinFilm_ON = FindProperty("_ThinFilm_ON", properties);
+        ThinFilmMaskMap = FindProperty("_ThinFilmMaskMap", properties);
         ThinFilmMiddleIOR = FindProperty("_ThinFilmMiddleIOR", properties);
         ThinFilmMiddleThickness = FindProperty("_ThinFilmMiddleThickness", properties);
         ThinFilmMiddleThicknessMin = FindProperty("_ThinFilmMiddleThicknessMin", properties);
@@ -306,6 +337,20 @@ public class TakenokoStandardGUI : ShaderGUI
         ThinFilmMiddleThicknessMap = FindProperty("_ThinFilmMiddleThicknessMap", properties);
 
         Cloth_ON = FindProperty("_Cloth_ON", properties);
+        ClothAlbedo1 = FindProperty("_ClothAlbedo1", properties);
+        ClothAlbedo2 = FindProperty("_ClothAlbedo2", properties);
+        ClothIOR1 = FindProperty("_ClothIOR1", properties);
+        ClothIOR2 = FindProperty("_ClothIOR2", properties);
+        ClothKd1 = FindProperty("_ClothKd1", properties);
+        ClothKd2 = FindProperty("_ClothKd2", properties);
+        ClothGammaV1 = FindProperty("_ClothGammaV1", properties);
+        ClothGammaV2 = FindProperty("_ClothGammaV2", properties);
+        ClothGammaS1 = FindProperty("_ClothGammaS1", properties);
+        ClothGammaS2 = FindProperty("_ClothGammaS2", properties);
+        ClothAlpha1 = FindProperty("_ClothAlpha1", properties);
+        ClothAlpha2 = FindProperty("_ClothAlpha2", properties);
+        ClothTangentOffset1 = FindProperty("_ClothTangentOffset1", properties);
+        ClothTangentOffset2 = FindProperty("_ClothTangentOffset2", properties);
 
         SrcBlend = FindProperty("_SrcBlend", properties);
         DstBlend = FindProperty("_DstBlend", properties);

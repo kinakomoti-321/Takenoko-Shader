@@ -193,7 +193,6 @@
             setClothParameterTK(u_shape, v_shape, n_shape, wi, wo, gparam);
 
             float3 fr = microcylinder_bsdf(gparam.theta_d, gparam.theta_h, gparam.phi_d, gparam.cosThetaI, gparam.cosThetaO, cparam1);
-            
             float m_value = microcylinder_M(gparam.cosPhiI, gparam.cosPhiO, gparam.phi_d);
             float p_value = microcylinder_P(gparam.cosPsiI, gparam.cosPsiO, gparam.psi_d);
             uValue += p_value * m_value * fr * cosThetaI;

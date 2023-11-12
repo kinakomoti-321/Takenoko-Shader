@@ -48,6 +48,7 @@
         _EmissionMap ("Emission", 2D) = "white" { }
 
         [Toggle(_TK_THINFILM_ON)] _ThinFilm_ON ("Thin Film", Float) = 0.0
+        _ThinFilmMaskMap ("Thin Film Mask", 2D) = "white" { }
         _ThinFilmMiddleIOR ("Middle Layer IOR", Range(1.01, 5.0)) = 1.5
         _ThinFilmMiddleThickness ("Middle Layer Thickness", Range(0.0, 1.0)) = 0.5
         _ThinFilmMiddleThicknessMin ("Middle Layer Thickness Minimum(nm)", Float) = 0.0
