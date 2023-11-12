@@ -154,6 +154,10 @@ public class TakenokoStandardGUI : ShaderGUI
                 BlendModeEnum renderMode = (BlendModeEnum)BlendMode.floatValue;
                 renderMode = (BlendModeEnum)EditorGUILayout.EnumPopup("Rendering Mode", renderMode);
                 BlendMode.floatValue = (float)renderMode;
+                if (renderMode == BlendModeEnum.Cutout)
+                {
+                    materialEditor.ShaderProperty(Cutoff, "Alpha Cutoff");
+                }
 
                 MappingModeEnum mappingMode = (MappingModeEnum)MappingMode.floatValue;
                 mappingMode = (MappingModeEnum)EditorGUILayout.Popup("Mapping Mode", (int)mappingMode, Enum.GetNames(typeof(MappingModeEnum)));
@@ -320,6 +324,7 @@ public class TakenokoStandardGUI : ShaderGUI
         MappingPosObj = FindProperty("_MappingPosObj", properties);
         SamplerMode = FindProperty("_SamplerMode", properties);
         BlendMode = FindProperty("_BlendMode", properties);
+        Cutoff = FindProperty("_Cutoff", properties);
 
         Color = FindProperty("_Color", properties);
         MainTex = FindProperty("_MainTex", properties);

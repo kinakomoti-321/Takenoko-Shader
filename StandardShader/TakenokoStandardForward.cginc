@@ -12,6 +12,8 @@
 #include "AutoLight.cginc"
 #include "Lighting.cginc"
 
+float _Cutoff;
+
 float4 _Color;
 Texture2D _MainTex;
 SamplerState sampler_MainTex;
@@ -190,6 +192,9 @@ fixed4 FragTKStandardForwardBase(TKStandardVertexOutput i) : SV_Target
     SetMaterialParameterTK(matParam, mapInfo, shadingNormal);
     normalWorld = shadingNormal;
 
+    #ifdef _ALPHATEST_ON
+        clip(matParam.alpha - _Cutoff);
+    #endif
 
     float3 lightDir = _WorldSpaceLightPos0.xyz;
     UNITY_LIGHT_ATTENUATION(atten, i, worldPos)
@@ -297,7 +302,6 @@ fixed4 FragTKStandardForwardBase(TKStandardVertexOutput i) : SV_Target
     #elif defined(_DEBUGMODE_BASECOLOR)
         shade_color = matParam.basecolor;
     #endif
-
 
     return fixed4(shade_color, matParam.alpha);
 }
