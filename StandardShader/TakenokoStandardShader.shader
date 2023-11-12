@@ -20,6 +20,15 @@
 
     Properties
     {
+        //Menu FoldOut
+        _RenderModeMenu ("Render Mode Menu", Float) = 0.0
+        _MainTexMenu ("MainTexMenu", Float) = 0.0
+        _EmissionMenu ("EmissionMenu", Float) = 0.0
+        _ThinFilmMenu ("ThinFilmMenu", Float) = 0.0
+        _LightmapMenu ("LightmapMenu", Float) = 0.0
+        _DebugMenu ("DebugMenu", Float) = 0.0
+        _ExperimentalMenu ("ExperimentalMenu", Float) = 0.0
+
         [Enum(None, 0, Triplanar, 1, Biplanar, 2, DitheredTriplanar, 3, XYZMask, 4)] _MappingMode ("Mapping Mode", Int) = 0
         [Enum(None, 0, Stochastic, 1, HexTiling, 2, Volonoi, 3)] _SamplerMode ("Sampler Mode", Int) = 0
         [Toggle(_MAPPING_POS_OBJ)] _MappingPosObj ("Mapping Position Object", Float) = 0.0

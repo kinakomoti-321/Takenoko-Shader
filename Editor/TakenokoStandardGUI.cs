@@ -10,6 +10,7 @@ using UnityEngine;
 
 public class TakenokoStandardGUI : ShaderGUI
 {
+    private bool _MainTexMenuOn = false;
     private enum LightmapFormatEnum
     {
         None,
@@ -134,6 +135,14 @@ public class TakenokoStandardGUI : ShaderGUI
 
     MaterialProperty DebugMode;
 
+    MaterialProperty RenderModeMenu;
+    MaterialProperty MainTexMenu;
+    MaterialProperty EmissionMenu;
+    MaterialProperty ThinFilmMenu;
+    MaterialProperty LightmapMenu;
+    MaterialProperty DebugMenu;
+    MaterialProperty ExperimentalMenu;
+
     bool firstTime = true;
 
     public override void OnGUI(MaterialEditor materialEditor, MaterialProperty[] properties)
@@ -148,162 +157,234 @@ public class TakenokoStandardGUI : ShaderGUI
 
         EditorGUI.BeginChangeCheck();
         {
-            using (new EditorGUILayout.VerticalScope("HelpBox"))
+
+            if (MenuFoldout(RenderModeMenu, "RenderMode"))
             {
-                GUILayout.Space(5);
-                BlendModeEnum renderMode = (BlendModeEnum)BlendMode.floatValue;
-                renderMode = (BlendModeEnum)EditorGUILayout.EnumPopup("Rendering Mode", renderMode);
-                BlendMode.floatValue = (float)renderMode;
-                if (renderMode == BlendModeEnum.Cutout)
-                {
-                    materialEditor.ShaderProperty(Cutoff, "Alpha Cutoff");
-                }
-
-                MappingModeEnum mappingMode = (MappingModeEnum)MappingMode.floatValue;
-                mappingMode = (MappingModeEnum)EditorGUILayout.Popup("Mapping Mode", (int)mappingMode, Enum.GetNames(typeof(MappingModeEnum)));
-                MappingMode.floatValue = (float)mappingMode;
-                if (mappingMode != MappingModeEnum.UV)
-                {
-                    //materialEditor.ShaderProperty(MappingPosObj, "Mapping Position Object");
-                }
-
-                SamplerModeEnum samplerMode = (SamplerModeEnum)SamplerMode.floatValue;
-                samplerMode = (SamplerModeEnum)EditorGUILayout.Popup("Sampler Mode", (int)samplerMode, Enum.GetNames(typeof(SamplerModeEnum)));
-                SamplerMode.floatValue = (float)samplerMode;
-
-                materialEditor.ShaderProperty(Color, "BaseColor Tint");
-                materialEditor.ShaderProperty(MainTex, "BaseColor Map");
-                GUILayout.Space(10);
-                materialEditor.ShaderProperty(Roughness, "Roughness");
-                materialEditor.ShaderProperty(RoughnessMap, "Roughness Map");
-                GUILayout.Space(10);
-                materialEditor.ShaderProperty(Metallic, "Metallic");
-                materialEditor.ShaderProperty(MetallicGlossMap, "Metallic Map");
-                GUILayout.Space(10);
-                materialEditor.ShaderProperty(BumpScale, "Normal Scale");
-                materialEditor.ShaderProperty(BumpMap, "Normal Map");
-                GUILayout.Space(10);
-                materialEditor.ShaderProperty(PallaxScale, "Height Scale");
-                materialEditor.ShaderProperty(PallaxMap, "Height Map");
-
-                ParallaxModeEnum pallaxMode = (ParallaxModeEnum)PallaxMode.floatValue;
-                pallaxMode = (ParallaxModeEnum)EditorGUILayout.Popup("Height Mode", (int)pallaxMode, Enum.GetNames(typeof(ParallaxModeEnum)));
-                PallaxMode.floatValue = (float)pallaxMode;
 
                 GUILayout.Space(5);
-            }
-
-            using (new EditorGUILayout.VerticalScope("HelpBox"))
-            {
-                GUILayout.Space(5);
-                materialEditor.ShaderProperty(Emission, "Emission");
-                if (Emission.floatValue > 0)
-                {
-                    materialEditor.ShaderProperty(EmissionColor, "Emission Color");
-                    materialEditor.ShaderProperty(EmissionMap, "Emission Map");
-                    // materialEditor.ShaderProperty(EmissionMode, "Emission Mode");
-
-                    EmissionModeEnum emissionMode = (EmissionModeEnum)EmissionMode.floatValue;
-                    emissionMode = (EmissionModeEnum)EditorGUILayout.Popup("Emission Mode", (int)emissionMode, Enum.GetNames(typeof(EmissionModeEnum)));
-                    EmissionMode.floatValue = (float)emissionMode;
-                }
-                GUILayout.Space(5);
-            }
-
-            using (new EditorGUILayout.VerticalScope("HelpBox"))
-            {
-                GUILayout.Space(5);
-                materialEditor.ShaderProperty(ThinFilm_ON, "Thin-Film");
-                materialEditor.ShaderProperty(ThinFilmMaskMap, "Mask Map");
-                if (ThinFilm_ON.floatValue > 0.0)
-                {
-                    materialEditor.ShaderProperty(ThinFilmMiddleIOR, "IOR");
-                    materialEditor.ShaderProperty(ThinFilmMiddleThickness, "Film Thickness");
-                    materialEditor.ShaderProperty(ThinFilmMiddleThicknessMap, "Film Thickness Map");
-                    materialEditor.ShaderProperty(ThinFilmMiddleThicknessMin, "Film Thickness minimum(nm)");
-                    materialEditor.ShaderProperty(ThinFilmMiddleThicknessMax, "Film Thickness maximum(nm)");
-                }
-                GUILayout.Space(5);
-            }
-
-            using (new EditorGUILayout.VerticalScope("HelpBox"))
-            {
-                GUILayout.Space(5);
-                LightmapFormatEnum lightmapFormat = (LightmapFormatEnum)LightmapMode.floatValue;
-                lightmapFormat = (LightmapFormatEnum)EditorGUILayout.Popup("Lightmap Format", (int)lightmapFormat, Enum.GetNames(typeof(LightmapFormatEnum)));
-                LightmapMode.floatValue = (float)lightmapFormat;
-
                 EditorGUI.indentLevel++;
-                materialEditor.ShaderProperty(LightmapPower, "Lightmap Power");
-                switch (lightmapFormat)
+                using (new EditorGUILayout.VerticalScope("HelpBox"))
                 {
-                    case LightmapFormatEnum.None:
-                        break;
-                    case LightmapFormatEnum.SH:
-                        materialEditor.ShaderProperty(SHModeNonLiner, "SH Mode NonLiner");
-                        materialEditor.ShaderProperty(SHSpecular, "SH Specular");
-                        break;
-                    case LightmapFormatEnum.MonoSH:
-                        materialEditor.ShaderProperty(SHModeNonLiner, "NonLiner SH Evaluation");
-                        materialEditor.ShaderProperty(SHSpecular, "SH Specular Approximation");
-                        break;
+                    GUILayout.Space(5);
+                    BlendModeEnum renderMode = (BlendModeEnum)BlendMode.floatValue;
+                    renderMode = (BlendModeEnum)EditorGUILayout.EnumPopup("Rendering Mode", renderMode);
+                    BlendMode.floatValue = (float)renderMode;
+                    if (renderMode == BlendModeEnum.Cutout)
+                    {
+                        materialEditor.ShaderProperty(Cutoff, "Alpha Cutoff");
+                    }
+                    GUILayout.Space(5);
+                }
+
+                EditorGUI.indentLevel--;
+                GUILayout.Space(5);
+            }
+
+            GUILayout.Space(10);
+
+            if (MenuFoldout(MainTexMenu, "MainTexture"))
+            {
+                GUILayout.Space(5);
+                EditorGUI.indentLevel++;
+                using (new EditorGUILayout.VerticalScope("HelpBox"))
+                {
+                    GUILayout.Space(5);
+
+                    using (new EditorGUILayout.VerticalScope("HelpBox"))
+                    {
+                        MappingModeEnum mappingMode = (MappingModeEnum)MappingMode.floatValue;
+                        mappingMode = (MappingModeEnum)EditorGUILayout.Popup("Mapping Mode", (int)mappingMode, Enum.GetNames(typeof(MappingModeEnum)));
+                        MappingMode.floatValue = (float)mappingMode;
+                        if (mappingMode != MappingModeEnum.UV)
+                        {
+                            //materialEditor.ShaderProperty(MappingPosObj, "Mapping Position Object");
+                        }
+
+                        SamplerModeEnum samplerMode = (SamplerModeEnum)SamplerMode.floatValue;
+                        samplerMode = (SamplerModeEnum)EditorGUILayout.Popup("Sampler Mode", (int)samplerMode, Enum.GetNames(typeof(SamplerModeEnum)));
+                        SamplerMode.floatValue = (float)samplerMode;
+                    }
+
+                    GUILayout.Space(5);
+
+                    materialEditor.ShaderProperty(Color, "BaseColor Tint");
+                    materialEditor.ShaderProperty(MainTex, "BaseColor Map");
+                    GUILayout.Space(10);
+                    materialEditor.ShaderProperty(Roughness, "Roughness");
+                    materialEditor.ShaderProperty(RoughnessMap, "Roughness Map");
+                    GUILayout.Space(10);
+                    materialEditor.ShaderProperty(Metallic, "Metallic");
+                    materialEditor.ShaderProperty(MetallicGlossMap, "Metallic Map");
+                    GUILayout.Space(10);
+                    materialEditor.ShaderProperty(BumpScale, "Normal Scale");
+                    materialEditor.ShaderProperty(BumpMap, "Normal Map");
+                    GUILayout.Space(10);
+                    materialEditor.ShaderProperty(PallaxScale, "Height Scale");
+                    materialEditor.ShaderProperty(PallaxMap, "Height Map");
+
+                    ParallaxModeEnum pallaxMode = (ParallaxModeEnum)PallaxMode.floatValue;
+                    pallaxMode = (ParallaxModeEnum)EditorGUILayout.Popup("Height Mode", (int)pallaxMode, Enum.GetNames(typeof(ParallaxModeEnum)));
+                    PallaxMode.floatValue = (float)pallaxMode;
+
+                    GUILayout.Space(5);
                 }
                 EditorGUI.indentLevel--;
-                materialEditor.ShaderProperty(SpecularOcclusion, "Specular Occlusion");
+                GUILayout.Space(5);
+            }
 
-                materialEditor.ShaderProperty(AddLightmap1_ON, "Add Lightmap1");
-                if (AddLightmap1_ON.floatValue > 0.0)
-                {
-                    EditorGUI.indentLevel++;
-                    materialEditor.ShaderProperty(AddLightmap1_Power, "Add Lightmap1 Power");
-                    materialEditor.ShaderProperty(AddLightmap1, "Add Lightmap1");
-                    EditorGUI.indentLevel--;
-                }
-                materialEditor.ShaderProperty(AddLightmap2_ON, "Add Lightmap2");
-                if (AddLightmap2_ON.floatValue > 0.0)
-                {
-                    EditorGUI.indentLevel++;
-                    materialEditor.ShaderProperty(AddLightmap2_Power, "Add Lightmap2 Power");
-                    materialEditor.ShaderProperty(AddLightmap2, "Add Lightmap2");
-                    EditorGUI.indentLevel--;
-                }
+            GUILayout.Space(10);
 
-                materialEditor.ShaderProperty(AddLightmap3_ON, "Add Lightmap3");
-                if (AddLightmap3_ON.floatValue > 0.0)
+            if (MenuFoldout(EmissionMenu, "Emission"))
+            {
+                using (new EditorGUILayout.VerticalScope("HelpBox"))
                 {
+                    GUILayout.Space(5);
+
                     EditorGUI.indentLevel++;
-                    materialEditor.ShaderProperty(AddLightmap3_Power, "Add Lightmap3 Power");
-                    materialEditor.ShaderProperty(AddLightmap3, "Add Lightmap3");
+                    materialEditor.ShaderProperty(Emission, "Emission");
+                    if (Emission.floatValue > 0)
+                    {
+                        materialEditor.ShaderProperty(EmissionColor, "Emission Color");
+                        materialEditor.ShaderProperty(EmissionMap, "Emission Map");
+                        // materialEditor.ShaderProperty(EmissionMode, "Emission Mode");
+
+                        EmissionModeEnum emissionMode = (EmissionModeEnum)EmissionMode.floatValue;
+                        emissionMode = (EmissionModeEnum)EditorGUILayout.Popup("Emission Mode", (int)emissionMode, Enum.GetNames(typeof(EmissionModeEnum)));
+                        EmissionMode.floatValue = (float)emissionMode;
+                    }
                     EditorGUI.indentLevel--;
+                    GUILayout.Space(5);
                 }
+            }
+
+            GUILayout.Space(10);
+
+            if (MenuFoldout(ThinFilmMenu, "Thin-Film"))
+            {
+                using (new EditorGUILayout.VerticalScope("HelpBox"))
+                {
+                    GUILayout.Space(5);
+                    EditorGUI.indentLevel++;
+                    materialEditor.ShaderProperty(ThinFilm_ON, "Thin-Film");
+                    materialEditor.ShaderProperty(ThinFilmMaskMap, "Mask Map");
+                    if (ThinFilm_ON.floatValue > 0.0)
+                    {
+                        materialEditor.ShaderProperty(ThinFilmMiddleIOR, "IOR");
+                        materialEditor.ShaderProperty(ThinFilmMiddleThickness, "Film Thickness");
+                        materialEditor.ShaderProperty(ThinFilmMiddleThicknessMap, "Film Thickness Map");
+                        materialEditor.ShaderProperty(ThinFilmMiddleThicknessMin, "Film Thickness minimum(nm)");
+                        materialEditor.ShaderProperty(ThinFilmMiddleThicknessMax, "Film Thickness maximum(nm)");
+                    }
+                    EditorGUI.indentLevel--;
+                    GUILayout.Space(5);
+                }
+            }
+
+            GUILayout.Space(10);
+
+            if (MenuFoldout(LightmapMenu, "Lightmap"))
+            {
+                GUILayout.Space(5);
+                using (new EditorGUILayout.VerticalScope("HelpBox"))
+                {
+                    GUILayout.Space(5);
+                    EditorGUI.indentLevel++;
+                    LightmapFormatEnum lightmapFormat = (LightmapFormatEnum)LightmapMode.floatValue;
+                    lightmapFormat = (LightmapFormatEnum)EditorGUILayout.Popup("Lightmap Format", (int)lightmapFormat, Enum.GetNames(typeof(LightmapFormatEnum)));
+                    LightmapMode.floatValue = (float)lightmapFormat;
+
+                    EditorGUI.indentLevel++;
+                    materialEditor.ShaderProperty(LightmapPower, "Lightmap Power");
+                    switch (lightmapFormat)
+                    {
+                        case LightmapFormatEnum.None:
+                            break;
+                        case LightmapFormatEnum.SH:
+                            materialEditor.ShaderProperty(SHModeNonLiner, "SH Mode NonLiner");
+                            materialEditor.ShaderProperty(SHSpecular, "SH Specular");
+                            break;
+                        case LightmapFormatEnum.MonoSH:
+                            materialEditor.ShaderProperty(SHModeNonLiner, "NonLiner SH Evaluation");
+                            materialEditor.ShaderProperty(SHSpecular, "SH Specular Approximation");
+                            break;
+                    }
+                    EditorGUI.indentLevel--;
+                    materialEditor.ShaderProperty(SpecularOcclusion, "Specular Occlusion");
+
+                    materialEditor.ShaderProperty(AddLightmap1_ON, "Add Lightmap1");
+                    if (AddLightmap1_ON.floatValue > 0.0)
+                    {
+                        EditorGUI.indentLevel++;
+                        materialEditor.ShaderProperty(AddLightmap1_Power, "Add Lightmap1 Power");
+                        materialEditor.ShaderProperty(AddLightmap1, "Add Lightmap1");
+                        EditorGUI.indentLevel--;
+                    }
+                    materialEditor.ShaderProperty(AddLightmap2_ON, "Add Lightmap2");
+                    if (AddLightmap2_ON.floatValue > 0.0)
+                    {
+                        EditorGUI.indentLevel++;
+                        materialEditor.ShaderProperty(AddLightmap2_Power, "Add Lightmap2 Power");
+                        materialEditor.ShaderProperty(AddLightmap2, "Add Lightmap2");
+                        EditorGUI.indentLevel--;
+                    }
+
+                    materialEditor.ShaderProperty(AddLightmap3_ON, "Add Lightmap3");
+                    if (AddLightmap3_ON.floatValue > 0.0)
+                    {
+                        EditorGUI.indentLevel++;
+                        materialEditor.ShaderProperty(AddLightmap3_Power, "Add Lightmap3 Power");
+                        materialEditor.ShaderProperty(AddLightmap3, "Add Lightmap3");
+                        EditorGUI.indentLevel--;
+                    }
+                    GUILayout.Space(5);
+                }
+                EditorGUI.indentLevel--;
                 GUILayout.Space(5);
             }
 
 
-            using (new EditorGUILayout.VerticalScope("HelpBox"))
+            GUILayout.Space(10);
+
+            if (MenuFoldout(DebugMenu, "Debug"))
             {
-                DebugModeEnum debugMode = (DebugModeEnum)DebugMode.floatValue;
-                debugMode = (DebugModeEnum)EditorGUILayout.Popup("Debug Mode", (int)debugMode, Enum.GetNames(typeof(DebugModeEnum)));
-                DebugMode.floatValue = (float)debugMode;
+                GUILayout.Space(5);
+                EditorGUI.indentLevel++;
+                using (new EditorGUILayout.VerticalScope("HelpBox"))
+                {
+                    DebugModeEnum debugMode = (DebugModeEnum)DebugMode.floatValue;
+                    debugMode = (DebugModeEnum)EditorGUILayout.Popup("Debug Mode", (int)debugMode, Enum.GetNames(typeof(DebugModeEnum)));
+                    DebugMode.floatValue = (float)debugMode;
+                }
+                EditorGUI.indentLevel--;
+                GUILayout.Space(5);
             }
 
-            using (new EditorGUILayout.VerticalScope("HelpBox"))
+            GUILayout.Space(10);
+
+            if (MenuFoldout(ExperimentalMenu, "Experimental"))
             {
-                materialEditor.ShaderProperty(Cloth_ON, "Cloth");
-                materialEditor.ShaderProperty(ClothAlbedo1, "Albedo1");
-                materialEditor.ShaderProperty(ClothAlbedo2, "Albedo2");
-                materialEditor.ShaderProperty(ClothIOR1, "IOR1");
-                materialEditor.ShaderProperty(ClothIOR2, "IOR2");
-                materialEditor.ShaderProperty(ClothKd1, "Kd1");
-                materialEditor.ShaderProperty(ClothKd2, "Kd2");
-                materialEditor.ShaderProperty(ClothGammaV1, "GammaV1");
-                materialEditor.ShaderProperty(ClothGammaV2, "GammaV2");
-                materialEditor.ShaderProperty(ClothGammaS1, "GammaS1");
-                materialEditor.ShaderProperty(ClothGammaS2, "GammaS2");
-                materialEditor.ShaderProperty(ClothAlpha1, "Alpha1");
-                materialEditor.ShaderProperty(ClothAlpha2, "Alpha2");
-                materialEditor.ShaderProperty(ClothTangentOffset1, "TangentOffset1");
-                materialEditor.ShaderProperty(ClothTangentOffset2, "TangentOffset2");
+                GUILayout.Space(5);
+                EditorGUI.indentLevel++;
+                using (new EditorGUILayout.VerticalScope("HelpBox"))
+                {
+                    materialEditor.ShaderProperty(Cloth_ON, "Cloth");
+                    materialEditor.ShaderProperty(ClothAlbedo1, "Albedo1");
+                    materialEditor.ShaderProperty(ClothAlbedo2, "Albedo2");
+                    materialEditor.ShaderProperty(ClothIOR1, "IOR1");
+                    materialEditor.ShaderProperty(ClothIOR2, "IOR2");
+                    materialEditor.ShaderProperty(ClothKd1, "Kd1");
+                    materialEditor.ShaderProperty(ClothKd2, "Kd2");
+                    materialEditor.ShaderProperty(ClothGammaV1, "GammaV1");
+                    materialEditor.ShaderProperty(ClothGammaV2, "GammaV2");
+                    materialEditor.ShaderProperty(ClothGammaS1, "GammaS1");
+                    materialEditor.ShaderProperty(ClothGammaS2, "GammaS2");
+                    materialEditor.ShaderProperty(ClothAlpha1, "Alpha1");
+                    materialEditor.ShaderProperty(ClothAlpha2, "Alpha2");
+                    materialEditor.ShaderProperty(ClothTangentOffset1, "TangentOffset1");
+                    materialEditor.ShaderProperty(ClothTangentOffset2, "TangentOffset2");
+                }
+                EditorGUI.indentLevel--;
+                GUILayout.Space(5);
             }
 
         }
@@ -320,6 +401,14 @@ public class TakenokoStandardGUI : ShaderGUI
 
     public void setMaterialProperty(MaterialProperty[] properties)
     {
+        RenderModeMenu = FindProperty("_RenderModeMenu", properties);
+        MainTexMenu = FindProperty("_MainTexMenu", properties);
+        EmissionMenu = FindProperty("_EmissionMenu", properties);
+        ThinFilmMenu = FindProperty("_ThinFilmMenu", properties);
+        LightmapMenu = FindProperty("_LightmapMenu", properties);
+        DebugMenu = FindProperty("_DebugMenu", properties);
+        ExperimentalMenu = FindProperty("_ExperimentalMenu", properties);
+
         MappingMode = FindProperty("_MappingMode", properties);
         MappingPosObj = FindProperty("_MappingPosObj", properties);
         SamplerMode = FindProperty("_SamplerMode", properties);
@@ -422,6 +511,21 @@ public class TakenokoStandardGUI : ShaderGUI
         }
     }
 
+    bool MenuFoldout(MaterialProperty mat, String menu_name)
+    {
+        GUIStyle button = new GUIStyle(EditorStyles.toolbar);
+        button.fontStyle = FontStyle.Bold;
+        button.fontSize = 16;
+
+        bool state = mat.floatValue > 0.0;
+        // state = EditorGUILayout.Foldout(state, new GUIContent(menu_name, "Tooltip"), button);
+        if (GUILayout.Button(new GUIContent(menu_name), button))
+        {
+            state = !state;
+        }
+        mat.floatValue = state ? 1.0f : 0.0f;
+        return state;
+    }
 
     void SetMaterialKeywords(Material material)
     {
