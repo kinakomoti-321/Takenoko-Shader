@@ -24,6 +24,12 @@
         [Enum(None, 0, Stochastic, 1, HexTiling, 2, Volonoi, 3)] _SamplerMode ("Sampler Mode", Int) = 0
         [Toggle(_MAPPING_POS_OBJ)] _MappingPosObj ("Mapping Position Object", Float) = 0.0
 
+        [Enum(Opaque, 0, Cutout, 1, Fade, 2, Transparent, 3)] _BlendMode ("Blend Mode", Float) = 0.0
+        [HideInInspector] _SrcBlend ("__src", Float) = 1.0
+        [HideInInspector] _DstBlend ("__dst", Float) = 0.0
+        [HideInInspector] _ZWrite ("__zw", Float) = 1.0
+        [HideInInspector] _Cull ("Cull", Float) = 2.0
+
         _Color ("Color", Color) = (1, 1, 1, 1)
         _MainTex ("Albedo", 2D) = "white" { }
 
@@ -72,9 +78,6 @@
         _ClothTangentOffset2 ("Tangent Offset2", Vector) = (0.0, 0.0, 0.0, 0.0)
 
 
-        [HideInInspector] _SrcBlend ("__src", Float) = 1.0
-        [HideInInspector] _DstBlend ("__dst", Float) = 0.0
-        [HideInInspector] _ZWrite ("__zw", Float) = 1.0
 
         [Enum(Defalut, 0, SH, 1, MonoSH, 2)] _LightmapMode ("Lightmap Mode", Int) = 0
         _LightmapPower ("Add Lightmap Power", Range(0.0, 1.0)) = 1.0
@@ -113,8 +116,8 @@
         Pass
         {
             Tags { "LightMode" = "ForwardBase" "RenderType" = "Opaque" }
-
-            ZWrite On
+            Blend [_SrcBlend] [_DstBlend]
+            ZWrite [_ZWrite]
 
             CGPROGRAM
             #pragma vertex VertTKStandardForwardBase
@@ -156,7 +159,7 @@
         {
             Name "ForwardAdd"
             Tags { "LightMode" = "ForwardAdd" }
-            Blend One One
+            Blend [_SrcBlend] One
             ZWrite Off
             CGPROGRAM
 

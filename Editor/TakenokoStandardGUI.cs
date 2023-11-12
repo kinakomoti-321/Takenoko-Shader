@@ -1,4 +1,6 @@
 using System;
+using System.Drawing.Drawing2D;
+using System.Runtime.InteropServices;
 using Codice.Client.BaseCommands.TubeClient;
 using Codice.Foreign;
 using NUnit.Framework;
@@ -53,15 +55,18 @@ public class TakenokoStandardGUI : ShaderGUI
         Normal,
     }
 
-
-    private GUIContent BaseColorText = new GUIContent("BaseColor");
-    private GUIContent RoughnessText = new GUIContent("Roughness");
-    private GUIContent NormalText = new GUIContent("Normal Map");
-    private GUIContent HeightText = new GUIContent("Height Map");
+    public enum BlendModeEnum
+    {
+        Opaque,
+        Cutout,
+        Fade,
+        Transparent
+    }
 
     MaterialProperty MappingMode;
     MaterialProperty MappingPosObj;
     MaterialProperty SamplerMode;
+    MaterialProperty BlendMode;
 
     MaterialProperty Color;
     MaterialProperty MainTex;
@@ -146,6 +151,10 @@ public class TakenokoStandardGUI : ShaderGUI
             using (new EditorGUILayout.VerticalScope("HelpBox"))
             {
                 GUILayout.Space(5);
+                BlendModeEnum renderMode = (BlendModeEnum)BlendMode.floatValue;
+                renderMode = (BlendModeEnum)EditorGUILayout.EnumPopup("Rendering Mode", renderMode);
+                BlendMode.floatValue = (float)renderMode;
+
                 MappingModeEnum mappingMode = (MappingModeEnum)MappingMode.floatValue;
                 mappingMode = (MappingModeEnum)EditorGUILayout.Popup("Mapping Mode", (int)mappingMode, Enum.GetNames(typeof(MappingModeEnum)));
                 MappingMode.floatValue = (float)mappingMode;
@@ -297,6 +306,10 @@ public class TakenokoStandardGUI : ShaderGUI
         if (EditorGUI.EndChangeCheck())
         {
             SetMaterialKeywords(material);
+            foreach (var obj in BlendMode.targets)
+            {
+                SetupBlendMode((Material)obj, (BlendModeEnum)BlendMode.floatValue);
+            }
         }
 
     }
@@ -306,11 +319,13 @@ public class TakenokoStandardGUI : ShaderGUI
         MappingMode = FindProperty("_MappingMode", properties);
         MappingPosObj = FindProperty("_MappingPosObj", properties);
         SamplerMode = FindProperty("_SamplerMode", properties);
+        BlendMode = FindProperty("_BlendMode", properties);
 
         Color = FindProperty("_Color", properties);
         MainTex = FindProperty("_MainTex", properties);
 
         Cutoff = FindProperty("_Cutoff", properties);
+
         Metallic = FindProperty("_Metallic", properties);
         MetallicGlossMap = FindProperty("_MetallicGlossMap", properties);
         Roughness = FindProperty("_Roughness", properties);
@@ -559,4 +574,50 @@ public class TakenokoStandardGUI : ShaderGUI
         }
     }
 
+    public static void SetupBlendMode(Material material, BlendModeEnum blendMode)
+    {
+        switch (blendMode)
+        {
+            case BlendModeEnum.Opaque:
+                material.SetOverrideTag("RenderType", "Opaque");
+                material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.One);
+                material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.Zero);
+                material.SetInt("_ZWrite", 1);
+                material.DisableKeyword("_ALPHATEST_ON");
+                material.DisableKeyword("_ALPHABLEND_ON");
+                material.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+                material.renderQueue = -1;
+                break;
+            case BlendModeEnum.Cutout:
+                material.SetOverrideTag("RenderType", "TransparentCutout");
+                material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.One);
+                material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.Zero);
+                material.SetInt("_ZWrite", 1);
+                material.EnableKeyword("_ALPHATEST_ON");
+                material.DisableKeyword("_ALPHABLEND_ON");
+                material.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+                material.renderQueue = (int)UnityEngine.Rendering.RenderQueue.AlphaTest;
+                break;
+            case BlendModeEnum.Fade:
+                material.SetOverrideTag("RenderType", "Transparent");
+                material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+                material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+                material.SetInt("_ZWrite", 0);
+                material.DisableKeyword("_ALPHATEST_ON");
+                material.EnableKeyword("_ALPHABLEND_ON");
+                material.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+                material.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
+                break;
+            case BlendModeEnum.Transparent:
+                material.SetOverrideTag("RenderType", "Transparent");
+                material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.One);
+                material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+                material.SetInt("_ZWrite", 0);
+                material.DisableKeyword("_ALPHATEST_ON");
+                material.DisableKeyword("_ALPHABLEND_ON");
+                material.EnableKeyword("_ALPHAPREMULTIPLY_ON");
+                material.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
+                break;
+        }
+    }
 }

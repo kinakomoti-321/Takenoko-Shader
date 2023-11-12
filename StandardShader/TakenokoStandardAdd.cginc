@@ -41,6 +41,9 @@ SamplerState sampler_PallaxMap;
 float4 _PallaxMap_ST;
 
 #if defined(_TK_THINFILM_ON)
+    Texture2D _ThinFilmMaskMap;
+    float4 _ThinFilmMaskMap_ST;
+    
     float _ThinFilmMiddleIOR;
     float _ThinFilmMiddleThickness;
     float _ThinFilmMiddleThicknessMin;

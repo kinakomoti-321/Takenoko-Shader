@@ -297,7 +297,9 @@ fixed4 FragTKStandardForwardBase(TKStandardVertexOutput i) : SV_Target
     #elif defined(_DEBUGMODE_BASECOLOR)
         shade_color = matParam.basecolor;
     #endif
-    return fixed4(shade_color, 1.0);
+
+
+    return fixed4(shade_color, matParam.alpha);
 }
 
 #endif

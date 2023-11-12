@@ -21,6 +21,7 @@ struct MaterialParameter
     float roughness;
     float metallic;
     float3 emission;
+    float alpha;
 
     #if defined(_TK_THINFILM_ON)
         bool thinFilmMask;
@@ -63,6 +64,7 @@ void SetMaterialParameterTK(inout MaterialParameter matParam, MappingInfoTK mapI
 
     //Basecolor
     matParam.basecolor = _Color * SAMPLE2D_MAINTEX_TK(_MainTex, sampler_MainTex, mapInfo.uv, _MainTex_ST + uvOffset, mapInfo.worldPos, mapInfo.worldNormal, mapInfo.pixelId);
+    matParam.alpha = 1.0;
     matParam.roughness = _Roughness * SAMPLE2D_MAINTEX_TK(_RoughnessMap, sampler_RoughnessMap, mapInfo.uv, _RoughnessMap_ST + uvOffset, mapInfo.worldPos, mapInfo.worldNormal, mapInfo.pixelId).r;
     matParam.metallic = _Metallic * SAMPLE2D_MAINTEX_TK(_MetallicGlossMap, sampler_MetallicGlossMap, mapInfo.uv, _MetallicGlossMap_ST + uvOffset, mapInfo.worldPos, mapInfo.worldNormal, mapInfo.pixelId).r;
 
