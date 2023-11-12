@@ -10,6 +10,8 @@
 #include "AutoLight.cginc"
 #include "Lighting.cginc"
 
+float _Cutoff;
+
 float4 _Color;
 Texture2D _MainTex;
 SamplerState sampler_MainTex;
@@ -43,7 +45,7 @@ float4 _PallaxMap_ST;
 #if defined(_TK_THINFILM_ON)
     Texture2D _ThinFilmMaskMap;
     float4 _ThinFilmMaskMap_ST;
-    
+
     float _ThinFilmMiddleIOR;
     float _ThinFilmMiddleThickness;
     float _ThinFilmMiddleThicknessMin;
@@ -147,6 +149,10 @@ fixed4 FragTKStandardAdd(TKStandardVertexOutput i) : SV_Target
     float3 shadingNormal;
     SetMaterialParameterTK(matParam, mapInfo, shadingNormal);
     normalWorld = shadingNormal;
+
+    #ifdef _ALPHATEST_ON
+        clip(matParam.alpha - _Cutoff);
+    #endif
     
     float3 lightDir;
     if (_WorldSpaceLightPos0.w > 0.0)
@@ -182,6 +188,6 @@ fixed4 FragTKStandardAdd(TKStandardVertexOutput i) : SV_Target
 
     shade_color = diffuse * (1.0 - matParam.metallic) + specular;
     //shade_color = attenuation;
-    return fixed4(shade_color, 1.0);
+    return fixed4(shade_color, matParam.alpha);
 }
 #endif
