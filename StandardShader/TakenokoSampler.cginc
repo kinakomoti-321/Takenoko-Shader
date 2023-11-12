@@ -67,7 +67,7 @@ float4 StochSample_float(Texture2D tex, float2 uv, SamplerState ss)
 #if defined(_MAPPINGMODE_TRIPLANAR)
     //Triplanar Mapping
     //https://web.archive.org/web/20220105142932/https://www.willpodpechan.com/blog/2020/10/16/de-tiled-triplanar-mapping-in-unity
-    inline float3 TriplanarMapping_TK(Texture2D tex, SamplerState sampler_tex, float3 pos, float3 normal, float4 uv_ST)
+    inline float4 TriplanarMapping_TK(Texture2D tex, SamplerState sampler_tex, float3 pos, float3 normal, float4 uv_ST)
     {
         float3 blend = abs(normal);
         blend = blend / (blend.x + blend.y + blend.z);
@@ -80,9 +80,9 @@ float4 StochSample_float(Texture2D tex, float2 uv, SamplerState ss)
         uvY = (normal.y < 0) ? - uvY + 0.5 : uvY + 0.5;
         uvZ = (normal.z < 0) ? - uvZ - 0.5 : uvZ - 0.5;
 
-        float3 texX = SAMPLE2D_GRAD_TK(tex, sampler_tex, uvX * uv_ST.xy + uv_ST.zw);
-        float3 texY = SAMPLE2D_GRAD_TK(tex, sampler_tex, uvY * uv_ST.xy + uv_ST.zw);
-        float3 texZ = SAMPLE2D_GRAD_TK(tex, sampler_tex, uvZ * uv_ST.xy + uv_ST.zw);
+        float4 texX = SAMPLE2D_GRAD_TK(tex, sampler_tex, uvX * uv_ST.xy + uv_ST.zw);
+        float4 texY = SAMPLE2D_GRAD_TK(tex, sampler_tex, uvY * uv_ST.xy + uv_ST.zw);
+        float4 texZ = SAMPLE2D_GRAD_TK(tex, sampler_tex, uvZ * uv_ST.xy + uv_ST.zw);
 
         return blend.x * texX + blend.y * texY + blend.z * texZ;
     }
@@ -135,7 +135,7 @@ float4 StochSample_float(Texture2D tex, float2 uv, SamplerState ss)
 #endif
 
 #if defined(_MAPPINGMODE_BIPLANAR)
-    inline float3 BilpanarMapping_TK(Texture2D tex, SamplerState samplerState, float3 pos, float3 normal, float4 uv_ST)
+    inline float4 BilpanarMapping_TK(Texture2D tex, SamplerState samplerState, float3 pos, float3 normal, float4 uv_ST)
     {
         float k = 8.0;
 
@@ -151,10 +151,10 @@ float4 StochSample_float(Texture2D tex, float2 uv, SamplerState ss)
         int3(2, 0, 1) ;
         int3 me = 3 - mi - ma;
         
-        float3 x_sample = SAMPLE2D_GRAD_TK(tex, samplerState, float2(pos[ma.y], pos[ma.z]) * uv_ST.xy + uv_ST.zw);
+        float4 x_sample = SAMPLE2D_GRAD_TK(tex, samplerState, float2(pos[ma.y], pos[ma.z]) * uv_ST.xy + uv_ST.zw);
         // float2(dpdx[ma.y], dpdx[ma.z]),
         // float2(dpdy[ma.y], dpdy[ma.z]));
-        float3 y_sample = SAMPLE2D_GRAD_TK(tex, samplerState, float2(pos[me.y], pos[me.z]) * uv_ST.xy + uv_ST.zw);
+        float4 y_sample = SAMPLE2D_GRAD_TK(tex, samplerState, float2(pos[me.y], pos[me.z]) * uv_ST.xy + uv_ST.zw);
         // float2(dpdx[me.y], dpdx[me.z]),
         // float2(dpdy[me.y], dpdy[me.z]));
         
@@ -200,7 +200,7 @@ float4 StochSample_float(Texture2D tex, float2 uv, SamplerState ss)
         return frac(52.9829189f * frac(0.06711056f * pixel.x + 0.00583715f * pixel.y));
     }
 
-    inline float3 DitherTriplanarMapping_TK(Texture2D tex, SamplerState sampler_tex, float3 pos, float3 normal, int2 pixelId, float4 uv_ST)
+    inline float4 DitherTriplanarMapping_TK(Texture2D tex, SamplerState sampler_tex, float3 pos, float3 normal, int2 pixelId, float4 uv_ST)
     {
         float3 blend = abs(normal);
         blend = pow(blend, 10.0);
@@ -229,25 +229,25 @@ float4 StochSample_float(Texture2D tex, float2 uv, SamplerState ss)
 
         float2 tri_uv = uvs[index];
         float4 ddx_ddy_tri_uv = ddx_ddy_uvs[index];
-        float3 col = 0;
+        float4 col = 0;
 
         if (index == 0)
         {
             tri_uv = uvX;
             ddx_ddy_tri_uv = ddx_ddy_uvX;
-            col = SAMPLE2D_GRAD_TK(tex, sampler_tex, tri_uv * uv_ST.xy + uv_ST.zw).rgb;
+            col = SAMPLE2D_GRAD_TK(tex, sampler_tex, tri_uv * uv_ST.xy + uv_ST.zw);
         }
         else if (index == 1)
         {
             tri_uv = uvY;
             ddx_ddy_tri_uv = ddx_ddy_uvY;
-            col = SAMPLE2D_GRAD_TK(tex, sampler_tex, tri_uv * uv_ST.xy + uv_ST.zw).rgb;
+            col = SAMPLE2D_GRAD_TK(tex, sampler_tex, tri_uv * uv_ST.xy + uv_ST.zw);
         }
         else if (index == 2)
         {
             tri_uv = uvZ;
             ddx_ddy_tri_uv = ddx_ddy_uvZ;
-            col = SAMPLE2D_GRAD_TK(tex, sampler_tex, tri_uv * uv_ST.xy + uv_ST.zw).rgb;
+            col = SAMPLE2D_GRAD_TK(tex, sampler_tex, tri_uv * uv_ST.xy + uv_ST.zw);
         }
 
         return col;
@@ -308,7 +308,7 @@ float4 StochSample_float(Texture2D tex, float2 uv, SamplerState ss)
 #endif
 
 #if defined(_MAPPINGMODE_XYZMASK)
-    inline float3 XYZMask_Mapping_TK(Texture2D tex, SamplerState samplerState, float4 uv_ST, float3 pos, float3 normal)
+    inline float4 XYZMask_Mapping_TK(Texture2D tex, SamplerState samplerState, float4 uv_ST, float3 pos, float3 normal)
     {
         float2 uvX = pos.yz;
         float2 uvY = pos.xz;
@@ -323,7 +323,7 @@ float4 StochSample_float(Texture2D tex, float2 uv, SamplerState ss)
         texUV = (mask.y > mask.x) ? uvY : texUV;
         texUV = (mask.z > max(mask.y, mask.x)) ? uvZ : texUV;
 
-        return SAMPLE2D_GRAD_TK(tex, samplerState, texUV * uv_ST.xy + uv_ST.zw).rgb;
+        return SAMPLE2D_GRAD_TK(tex, samplerState, texUV * uv_ST.xy + uv_ST.zw);
     }
     inline float3 XYZMask_MappingNormal_TK(Texture2D tex, SamplerState samplerState, float4 uv_ST, float3 pos, float3 normal)
     {
@@ -344,11 +344,11 @@ float4 StochSample_float(Texture2D tex, float2 uv, SamplerState ss)
     }
 #endif
 
-inline float3 SAMPLE2D_MAINTEX_TK(Texture2D tex, SamplerState samplerState, float2 uv, float4 uv_ST,
+inline float4 SAMPLE2D_MAINTEX_TK(Texture2D tex, SamplerState samplerState, float2 uv, float4 uv_ST,
 float3 pos, float3 normal, int2 pixelId)
 {
     #if defined(_MAPPINGMODE_NONE)
-        return SAMPLE2D_GRAD_TK(tex, samplerState, uv * uv_ST.xy + uv_ST.zw).rgb;
+        return SAMPLE2D_GRAD_TK(tex, samplerState, uv * uv_ST.xy + uv_ST.zw);
     #elif defined(_MAPPINGMODE_TRIPLANAR)
         return TriplanarMapping_TK(tex, samplerState, pos, normal, uv_ST);
     #elif defined(_MAPPINGMODE_BIPLANAR)
@@ -358,7 +358,7 @@ float3 pos, float3 normal, int2 pixelId)
     #elif defined(_MAPPINGMODE_XYZMASK)
         return XYZMask_Mapping_TK(tex, samplerState, uv_ST, pos, normal);
     #else
-        return SAMPLE2D_GRAD_TK(tex, samplerState, uv * uv_ST.xy + uv_ST.zw).rgb;
+        return SAMPLE2D_GRAD_TK(tex, samplerState, uv * uv_ST.xy + uv_ST.zw);
     #endif
 }
 
