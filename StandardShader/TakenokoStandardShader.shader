@@ -65,13 +65,13 @@
         _DetailMaskMap ("Detail Mask Map", 2D) = "white" { }
 
         _DetailAlbedo ("Detail BaseColor Tint", Color) = (1.0, 1.0, 1.0, 1.0)
-        _DetailAlbedoMap ("Detail BaseColor Map", 2D) = "black" { }
+        _DetailAlbedoMap ("Detail BaseColor Map", 2D) = "white" { }
 
         _DetailRoughness ("Detail Roughness", Range(0.0, 1.0)) = 0.0
-        _DetailRoughnessMap ("Detail Roughness Map", 2D) = "black" { }
+        _DetailRoughnessMap ("Detail Roughness Map", 2D) = "white" { }
 
         _DetailMetallic ("Detail Metallic Map", Range(0.0, 1.0)) = 0.0
-        _DetailMetallicMap ("Detal Metallic Map", Range(0.0, 1.0)) = 0.0
+        _DetailMetallicMap ("Detal Metallic Map", 2D) = "white" { }
 
         _DetalNormalMapScale ("Detail Normal Map Scale", Range(0.0, 3.0)) = 1.0
         [Bump] _DetailNormalMap ("Detail Normal Map", 2D) = "bump" { }

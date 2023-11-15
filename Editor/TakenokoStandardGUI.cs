@@ -84,6 +84,20 @@ public class TakenokoStandardGUI : ShaderGUI
     MaterialProperty PallaxMap;
     MaterialProperty PallaxMode;
 
+    //DetailMaps
+    MaterialProperty Detail_ON;
+    MaterialProperty DetailMaskFactor;
+    MaterialProperty DetailMaskMap;
+    MaterialProperty DetailAlbedo;
+    MaterialProperty DetailAlbedoMap;
+    MaterialProperty DetailRoughness;
+    MaterialProperty DetailRoughnessMap;
+    MaterialProperty DetailMetallic;
+    MaterialProperty DetailMetallicMap;
+    MaterialProperty DetalNormalMapScale;
+    MaterialProperty DetailNormalMap;
+
+
     MaterialProperty Emission;
     MaterialProperty EmissionMode;
     MaterialProperty EmissionColor;
@@ -182,10 +196,11 @@ public class TakenokoStandardGUI : ShaderGUI
 
             GUILayout.Space(10);
 
-            if (MenuFoldout(MainTexMenu, "MainTexture"))
+            if (MenuFoldout(MainTexMenu, "Main Paramater"))
             {
                 GUILayout.Space(5);
                 EditorGUI.indentLevel++;
+                GUILayout.Label("Main Texture", EditorStyles.boldLabel);
                 using (new EditorGUILayout.VerticalScope("HelpBox"))
                 {
                     GUILayout.Space(5);
@@ -226,6 +241,32 @@ public class TakenokoStandardGUI : ShaderGUI
                     pallaxMode = (ParallaxModeEnum)EditorGUILayout.Popup("Height Mode", (int)pallaxMode, Enum.GetNames(typeof(ParallaxModeEnum)));
                     PallaxMode.floatValue = (float)pallaxMode;
 
+                    GUILayout.Space(5);
+                }
+
+                GUILayout.Space(5);
+                GUILayout.Label("Detail Maps", EditorStyles.boldLabel);
+                using (new EditorGUILayout.VerticalScope("HelpBox"))
+                {
+                    GUILayout.Space(5);
+                    materialEditor.ShaderProperty(Detail_ON, "Use Detail Map");
+                    if (Detail_ON.floatValue > 0.0)
+                    {
+                        materialEditor.ShaderProperty(DetailMaskFactor, "Detail Mask Factor");
+                        materialEditor.ShaderProperty(DetailMaskMap, "Detail Mask Map");
+                        GUILayout.Space(10);
+                        materialEditor.ShaderProperty(DetailAlbedo, "Detail Albedo");
+                        materialEditor.ShaderProperty(DetailAlbedoMap, "Detail Albedo Map");
+                        GUILayout.Space(10);
+                        materialEditor.ShaderProperty(DetailRoughness, "Detail Roughness");
+                        materialEditor.ShaderProperty(DetailRoughnessMap, "Detail Roughness Map");
+                        GUILayout.Space(10);
+                        materialEditor.ShaderProperty(DetailMetallic, "Detail Metallic");
+                        materialEditor.ShaderProperty(DetailMetallicMap, "Detail Metallic Map");
+                        GUILayout.Space(10);
+                        materialEditor.ShaderProperty(DetalNormalMapScale, "Detail Normal Scale");
+                        materialEditor.ShaderProperty(DetailNormalMap, "Detail Normal Map");
+                    }
                     GUILayout.Space(5);
                 }
                 EditorGUI.indentLevel--;
@@ -436,6 +477,18 @@ public class TakenokoStandardGUI : ShaderGUI
         EmissionMode = FindProperty("_EmissionMode", properties);
         EmissionColor = FindProperty("_EmissionColor", properties);
         EmissionMap = FindProperty("_EmissionMap", properties);
+
+        Detail_ON = FindProperty("_Detail_ON", properties);
+        DetailMaskFactor = FindProperty("_DetailMaskFactor", properties);
+        DetailMaskMap = FindProperty("_DetailMaskMap", properties);
+        DetailAlbedo = FindProperty("_DetailAlbedo", properties);
+        DetailAlbedoMap = FindProperty("_DetailAlbedoMap", properties);
+        DetailRoughness = FindProperty("_DetailRoughness", properties);
+        DetailRoughnessMap = FindProperty("_DetailRoughnessMap", properties);
+        DetailMetallic = FindProperty("_DetailMetallic", properties);
+        DetailMetallicMap = FindProperty("_DetailMetallicMap", properties);
+        DetalNormalMapScale = FindProperty("_DetalNormalMapScale", properties);
+        DetailNormalMap = FindProperty("_DetailNormalMap", properties);
 
         ThinFilm_ON = FindProperty("_ThinFilm_ON", properties);
         ThinFilmMaskMap = FindProperty("_ThinFilmMaskMap", properties);
