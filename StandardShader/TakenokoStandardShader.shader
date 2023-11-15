@@ -38,7 +38,8 @@
         [HideInInspector] _DstBlend ("__dst", Float) = 0.0
         [HideInInspector] _ZWrite ("__zw", Float) = 1.0
         [HideInInspector] _Cull ("Cull", Float) = 2.0
-
+        
+        //Main Texture
         _Color ("Color", Color) = (1, 1, 1, 1)
         _MainTex ("Albedo", 2D) = "white" { }
 
@@ -57,11 +58,31 @@
         _PallaxMap ("Pallax Map", 2D) = "black" { }
         [Enum(None, 0 Simple, 1, Steep, 2)] _PallaxMode ("Pallax Mode", Int) = 0
 
+        //Detail Map
+        [Toggle(_TK_DETAIL_ON)] _Detail_ON ("Detail", Float) = 0.0
+
+        _DetailMaskFactor ("Detail Mask Factor", Range(0.0, 1.0)) = 0.5
+        _DetailMaskMap ("Detail Mask Map", 2D) = "white" { }
+
+        _DetailAlbedo ("Detail BaseColor Tint", Color) = (1.0, 1.0, 1.0, 1.0)
+        _DetailAlbedoMap ("Detail BaseColor Map", 2D) = "black" { }
+
+        _DetailRoughness ("Detail Roughness", Range(0.0, 1.0)) = 0.0
+        _DetailRoughnessMap ("Detail Roughness Map", 2D) = "black" { }
+
+        _DetailMetallic ("Detail Metallic Map", Range(0.0, 1.0)) = 0.0
+        _DetailMetallicMap ("Detal Metallic Map", Range(0.0, 1.0)) = 0.0
+
+        _DetalNormalMapScale ("Detail Normal Map Scale", Range(0.0, 3.0)) = 1.0
+        [Bump] _DetailNormalMap ("Detail Normal Map", 2D) = "bump" { }
+
+        //Emission
         [Toggle(_EMISSION)] _Emission ("Emission", Float) = 0.0
         [Enum(None, 0, RealTime, 1, Bake, 2)] _EmissionMode ("Emission Mode", Int) = 0
         [HDR] _EmissionColor ("Color", Color) = (0, 0, 0, 0)
         _EmissionMap ("Emission", 2D) = "white" { }
 
+        //ThinFilm
         [Toggle(_TK_THINFILM_ON)] _ThinFilm_ON ("Thin Film", Float) = 0.0
         _ThinFilmMaskMap ("Thin Film Mask", 2D) = "white" { }
         _ThinFilmMiddleIOR ("Middle Layer IOR", Range(1.01, 5.0)) = 1.5
@@ -69,7 +90,8 @@
         _ThinFilmMiddleThicknessMin ("Middle Layer Thickness Minimum(nm)", Float) = 0.0
         _ThinFilmMiddleThicknessMax ("Middle Layer Thickness Maximum(nm)", Float) = 1000.0
         _ThinFilmMiddleThicknessMap ("Middle Layer Thickness Map", 2D) = "white" { }
-
+        
+        //Cloth
         [Toggle(_TK_CLOTH_ON)] _Cloth_ON ("Cloth", Float) = 0.0
         _ClothAlbedo1 ("Albedo1", Color) = (0.1, 1, 0.4, 1)
         _ClothAlbedo2 ("Albedo2", Color) = (1.0, 0.0, 0.1, 1)
@@ -87,13 +109,14 @@
         _ClothTangentOffset2 ("Tangent Offset2", Vector) = (0.0, 0.0, 0.0, 0.0)
 
 
-
+        //Lightmap
         [Enum(Defalut, 0, SH, 1, MonoSH, 2)] _LightmapMode ("Lightmap Mode", Int) = 0
         _LightmapPower ("Add Lightmap Power", Range(0.0, 1.0)) = 1.0
         [Toggle(_SHMODE_NONLINER)] _SHModeNonLiner ("NonLiner SH", Float) = 1.0
         [Toggle(_SPECULAR_OCCLUSION)] _SpecularOcclusion ("Specular Occlusion", Float) = 0.0
         [Toggle(_SH_SPECULAR)] _SHSpecular ("SH Specular", Float) = 0.0
 
+        //Addtional Lightmap
         [Toggle(_ADDLIGHTMAP1_ON)] _AddLightmap1_ON ("Add Lightmap1", Float) = 0.0
         _AddLightmap1_Power ("Add Lightmap1 Power", Range(0.0, 1.0)) = 1.0
         _AddLightmap1 ("Add Lightmap1", 2D) = "black" { }
@@ -141,6 +164,8 @@
             #pragma multi_compile _DEBUGMODE_NONE _DEBUGMODE_BASECOLOR _DEBUGMODE_NORMAL
 
             #pragma shader_feature_local _MAPPING_POS_OBJ
+
+            #pragma shader_feature_local _TK_DETAIL_ON
 
             #pragma shader_feature_local _TK_THINFILM_ON
             #pragma shader_feature_local _TK_THINFILM_USE_MAP

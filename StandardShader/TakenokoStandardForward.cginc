@@ -44,8 +44,29 @@ Texture2D _PallaxMap;
 SamplerState sampler_PallaxMap;
 float4 _PallaxMap_ST;
 
-
 float _LightmapPower;
+
+#if defined(_TK_DETAIL_ON)
+    float _DetailMaskFactor;
+    Texture2D _DetailMaskMap;
+    float4 _DetailMaskMap_ST;
+
+    float3 _DetailAlbedo;
+    Texture2D _DetailAlbedoMap;
+    float4 _DetailAlbedoMap_ST;
+
+    float _DetailRoughness;
+    Texture2D _DetailRoughnessMap;
+    float4 _DetailRoughnessMap_ST;
+
+    float _DetailMetallic;
+    Texture2D _DetailMetallicMap;
+    float4 _DetailMetallicMap_ST;
+
+    float _DetalNormalMapScale;
+    Texture2D _DetailNormalMap;
+    float4 _DetailNormalMap_ST;
+#endif
 
 #if defined(_TK_THINFILM_ON)
     Texture2D _ThinFilmMaskMap;
