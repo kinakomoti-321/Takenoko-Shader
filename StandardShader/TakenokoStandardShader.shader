@@ -174,6 +174,8 @@
             ZWrite Off
             CGPROGRAM
 
+            #pragma enable_d3d11_debug_symbols
+
             #pragma vertex VertTKStandardAdd
             #pragma fragment FragTKStandardAdd
 

@@ -61,14 +61,17 @@
 
         param.theta_d = theta_d;
         param.theta_h = theta_h;
-        param.cosPhiI = dot(n, wi_on_normal);
-        param.cosPhiO = dot(n, wo_on_normal);
+        param.cosPhiI = abs(dot(n, wi_on_normal));
+        param.cosPhiO = abs(dot(n, wo_on_normal));
         param.phi_d = phi_d;
         param.cosThetaI = cos(thetaI);
         param.cosThetaO = cos(thetaO);
         param.psi_d = psi_d;
-        param.cosPsiI = dot(n, wi_on_tangent_normal);
-        param.cosPsiO = dot(n, wo_on_tangent_normal);
+        param.cosPsiI = abs(dot(n, wi_on_tangent_normal));
+        param.cosPsiO = abs(dot(n, wo_on_tangent_normal));
+        
+        //param.test = param.cosPhiO;
+
     }
 
     static inline float normalized_gaussian(float beta, float theta)
@@ -184,11 +187,13 @@
         float alpha_0 = matparam.clothAlpha1;
         float alpha_1 = matparam.clothAlpha2;
 
+        float3 test_fr;
+
         for (int i = 0; i < Nu; i++)
         {
             float3 v_shape = v;
-            float3 u_shape = vector_quat_rotate(u, VectorToQuatunion(v_shape, RADIAN(tangent_offset_u[i])));
-            float3 n_shape = vector_quat_rotate(n, VectorToQuatunion(v_shape, RADIAN(tangent_offset_u[i])));
+            float3 u_shape = u;//vector_quat_rotate(u, VectorToQuatunion(v_shape, RADIAN(tangent_offset_u[i])));
+            float3 n_shape = n;//vector_quat_rotate(n, VectorToQuatunion(v_shape, RADIAN(tangent_offset_u[i])));
 
             setClothParameterTK(u_shape, v_shape, n_shape, wi, wo, gparam);
 
@@ -198,6 +203,7 @@
             uValue += p_value * m_value * fr * cosThetaI;
             
             Q += alpha_0 * p_value / Nu;
+            test_fr = p_value * m_value * fr;
         }
 
         uValue /= Nu;
@@ -224,7 +230,7 @@
         cosThetaI = abs(dot(n, wi));
         float3 fr_cosTheta = uValue * alpha_0 + vValue * alpha_1;
 
-        return max(fr_cosTheta / Q, 0.0);
+        return test_fr;
     }
 #endif
 
