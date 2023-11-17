@@ -61,7 +61,8 @@ float4 StochSample_float(Texture2D tex, float2 uv, SamplerState ss)
     #define SAMPLE2D_GRAD_TK(tex, sampler_tex, uv) tex.SampleGrad(sampler_tex, uv, ddx(uv), ddy(uv))
 #endif
 
-#define UNPACK_NORMAL_TK(normal) UnpackNormal(normal) * float3(_BumpScale, _BumpScale, 1.0)
+#define UNPACK_NORMAL_TK(normal, scale) UnpackScaleNormal(normal, scale)
+// #define UNPACK_NORMAL_TK(normal) UnpackNormal(normal) * float3(_BumpScale, _BumpScale, 1.0)
 
 
 #if defined(_MAPPINGMODE_TRIPLANAR)
@@ -95,7 +96,7 @@ float4 StochSample_float(Texture2D tex, float2 uv, SamplerState ss)
         return n;
     }
 
-    inline float3 TriplanarMappingNormal_TK(Texture2D tex, SamplerState sampler_tex, float3 pos, float3 normal, float4 uv_ST)
+    inline float3 TriplanarMappingNormal_TK(Texture2D tex, SamplerState sampler_tex, float3 pos, float3 normal, float4 uv_ST, float normal_scale)
     {
         float3 blend = abs(normal);
         blend = blend / (blend.x + blend.y + blend.z);
@@ -108,9 +109,9 @@ float4 StochSample_float(Texture2D tex, float2 uv, SamplerState ss)
         uvY = (normal.y < 0) ? - uvY + 0.5 : uvY + 0.5;
         uvZ = (normal.z < 0) ? - uvZ - 0.5 : uvZ - 0.5;
 
-        float3 tangentX = UNPACK_NORMAL_TK(SAMPLE2D_GRAD_TK(tex, sampler_tex, uvX * uv_ST.xy + uv_ST.zw)).xyz;
-        float3 tangentY = UNPACK_NORMAL_TK(SAMPLE2D_GRAD_TK(tex, sampler_tex, uvY * uv_ST.xy + uv_ST.zw)).xyz;
-        float3 tangentZ = UNPACK_NORMAL_TK(SAMPLE2D_GRAD_TK(tex, sampler_tex, uvZ * uv_ST.xy + uv_ST.zw)).xyz;
+        float3 tangentX = UNPACK_NORMAL_TK(SAMPLE2D_GRAD_TK(tex, sampler_tex, uvX * uv_ST.xy + uv_ST.zw), normal_scale).xyz;
+        float3 tangentY = UNPACK_NORMAL_TK(SAMPLE2D_GRAD_TK(tex, sampler_tex, uvY * uv_ST.xy + uv_ST.zw), normal_scale).xyz;
+        float3 tangentZ = UNPACK_NORMAL_TK(SAMPLE2D_GRAD_TK(tex, sampler_tex, uvZ * uv_ST.xy + uv_ST.zw), normal_scale).xyz;
 
         if (normal.x < 0)
         {
@@ -164,7 +165,7 @@ float4 StochSample_float(Texture2D tex, float2 uv, SamplerState ss)
         return (weight.x * x_sample + weight.y * y_sample) / (weight.x + weight.y);
     }
 
-    inline float3 BilpanarMappingNormal_TK(Texture2D tex, SamplerState samplerState, float3 pos, float3 normal, float4 uv_ST)
+    inline float3 BilpanarMappingNormal_TK(Texture2D tex, SamplerState samplerState, float3 pos, float3 normal, float4 uv_ST, float normal_scale)
     {
         float k = 8.0;
 
@@ -180,8 +181,8 @@ float4 StochSample_float(Texture2D tex, float2 uv, SamplerState ss)
         int3(2, 0, 1) ;
         int3 me = 3 - mi - ma;
         
-        float3 x_sample = UNPACK_NORMAL_TK(SAMPLE2D_TK(tex, samplerState, float2(pos[ma.y], pos[ma.z]) * uv_ST.xy + uv_ST.zw));
-        float3 y_sample = UNPACK_NORMAL_TK(SAMPLE2D_TK(tex, samplerState, float2(pos[me.y], pos[me.z]) * uv_ST.xy + uv_ST.zw));
+        float3 x_sample = UNPACK_NORMAL_TK(SAMPLE2D_TK(tex, samplerState, float2(pos[ma.y], pos[ma.z]) * uv_ST.xy + uv_ST.zw), normal_scale);
+        float3 y_sample = UNPACK_NORMAL_TK(SAMPLE2D_TK(tex, samplerState, float2(pos[me.y], pos[me.z]) * uv_ST.xy + uv_ST.zw), normal_scale);
 
         float2 weight = float2(normal[ma.x], normal[me.x]);
         weight = clamp((weight - 0.5773) / (1.0 - 0.5773), 0.0, 1.0);
@@ -253,7 +254,7 @@ float4 StochSample_float(Texture2D tex, float2 uv, SamplerState ss)
         return col;
     }
 
-    inline float3 DitherTriplanarMappingNormal_TK(Texture2D tex, SamplerState sampler_tex, float3 pos, float3 normal, int2 pixelId, float4 uv_ST)
+    inline float3 DitherTriplanarMappingNormal_TK(Texture2D tex, SamplerState sampler_tex, float3 pos, float3 normal, int2 pixelId, float4 uv_ST, float normal_scale)
     {
         float3 blend = abs(normal);
         blend = pow(blend, 10.0);
@@ -288,19 +289,19 @@ float4 StochSample_float(Texture2D tex, float2 uv, SamplerState ss)
         {
             tri_uv = uvX;
             ddx_ddy_tri_uv = ddx_ddy_uvX;
-            col = UNPACK_NORMAL_TK(SAMPLE2D_GRAD_TK(tex, sampler_tex, tri_uv * uv_ST.xy + uv_ST.zw));
+            col = UNPACK_NORMAL_TK(SAMPLE2D_GRAD_TK(tex, sampler_tex, tri_uv * uv_ST.xy + uv_ST.zw), normal_scale);
         }
         else if (index == 1)
         {
             tri_uv = uvY;
             ddx_ddy_tri_uv = ddx_ddy_uvY;
-            col = UNPACK_NORMAL_TK(SAMPLE2D_GRAD_TK(tex, sampler_tex, tri_uv * uv_ST.xy + uv_ST.zw));
+            col = UNPACK_NORMAL_TK(SAMPLE2D_GRAD_TK(tex, sampler_tex, tri_uv * uv_ST.xy + uv_ST.zw), normal_scale);
         }
         else if (index == 2)
         {
             tri_uv = uvZ;
             ddx_ddy_tri_uv = ddx_ddy_uvZ;
-            col = UNPACK_NORMAL_TK(SAMPLE2D_GRAD_TK(tex, sampler_tex, tri_uv * uv_ST.xy + uv_ST.zw));
+            col = UNPACK_NORMAL_TK(SAMPLE2D_GRAD_TK(tex, sampler_tex, tri_uv * uv_ST.xy + uv_ST.zw), normal_scale);
         }
 
         return col;
@@ -325,7 +326,7 @@ float4 StochSample_float(Texture2D tex, float2 uv, SamplerState ss)
 
         return SAMPLE2D_GRAD_TK(tex, samplerState, texUV * uv_ST.xy + uv_ST.zw);
     }
-    inline float3 XYZMask_MappingNormal_TK(Texture2D tex, SamplerState samplerState, float4 uv_ST, float3 pos, float3 normal)
+    inline float3 XYZMask_MappingNormal_TK(Texture2D tex, SamplerState samplerState, float4 uv_ST, float3 pos, float3 normal, float normal_scale)
     {
         float2 uvX = pos.yz;
         float2 uvY = pos.xz;
@@ -340,7 +341,7 @@ float4 StochSample_float(Texture2D tex, float2 uv, SamplerState ss)
         texUV = (mask.y > mask.x) ? uvY : texUV;
         texUV = (mask.z > max(mask.y, mask.x)) ? uvZ : texUV;
 
-        return UNPACK_NORMAL_TK(SAMPLE2D_TK(tex, samplerState, texUV * uv_ST.xy + uv_ST.zw));
+        return UNPACK_NORMAL_TK(SAMPLE2D_TK(tex, samplerState, texUV * uv_ST.xy + uv_ST.zw), normal_scale);
     }
 #endif
 
@@ -363,24 +364,24 @@ float3 pos, float3 normal, int2 pixelId)
 }
 
 inline float3 SAMPLE2D_NORMALMAP_TK(Texture2D tex, SamplerState samplerState, float2 uv, float4 uv_ST,
-float3 pos, float3 normal, float3 worldTangent, float3 worldBinormal, int2 pixelId)
+float3 pos, float3 normal, float3 worldTangent, float3 worldBinormal, int2 pixelId, float normal_scale)
 {
     #if defined(_MAPPINGMODE_NONE)
-        float3 texNormal = UNPACK_NORMAL_TK(SAMPLE2D_TK(tex, samplerState, uv * uv_ST.xy + uv_ST.zw));
+        float3 texNormal = UNPACK_NORMAL_TK(SAMPLE2D_TK(tex, samplerState, uv * uv_ST.xy + uv_ST.zw), normal_scale);
         return normalize(localToWorld(worldTangent, normal, worldBinormal, float3(texNormal.x, texNormal.z, texNormal.y)));
     #elif defined(_MAPPINGMODE_TRIPLANAR)
-        return normalize(TriplanarMappingNormal_TK(tex, samplerState, pos, normal, uv_ST));
+        return normalize(TriplanarMappingNormal_TK(tex, samplerState, pos, normal, uv_ST, normal_scale));
     #elif defined(_MAPPINGMODE_BIPLANAR)
-        float3 texNormal = BilpanarMappingNormal_TK(tex, samplerState, pos, normal, uv_ST);
+        float3 texNormal = BilpanarMappingNormal_TK(tex, samplerState, pos, normal, uv_ST, normal_scale);
         return localToWorld(worldTangent, normal, worldBinormal, float3(texNormal.x, texNormal.z, texNormal.y));
     #elif defined(_MAPPINGMODE_DITHER_TRIPLANAR)
-        float3 texNormal = DitherTriplanarMappingNormal_TK(tex, samplerState, pos, normal, pixelId, uv_ST);
+        float3 texNormal = DitherTriplanarMappingNormal_TK(tex, samplerState, pos, normal, pixelId, uv_ST, normal_scale);
         return normalize(localToWorld(worldTangent, normal, worldBinormal, float3(texNormal.x, texNormal.z, texNormal.y)));
     #elif defined(_MAPPINGMODE_XYZMASK)
-        float3 texNormal = XYZMask_MappingNormal_TK(tex, samplerState, uv_ST, pos, normal);
+        float3 texNormal = XYZMask_MappingNormal_TK(tex, samplerState, uv_ST, pos, normal, normal_scale);
         return normalize(localToWorld(worldTangent, normal, worldBinormal, float3(texNormal.x, texNormal.z, texNormal.y)));
     #else
-        float3 texNormal = UNPACK_NORMAL_TK(SAMPLE2D_TK(tex, samplerState, uv * uv_ST.xy + uv_ST.zw));
+        float3 texNormal = UNPACK_NORMAL_TK(SAMPLE2D_TK(tex, samplerState, uv * uv_ST.xy + uv_ST.zw), normal_scale);
         return normalize(localToWorld(worldTangent, normal, worldBinormal, float3(texNormal.x, texNormal.z, texNormal.y)));
     #endif
 }
@@ -423,6 +424,48 @@ float3 pos, float3 normal, int2 pixelId, float3 viewDir)
         float2 finalTexCoords = prevTexCoords * weight + currentTexCoords * (1.0 - weight);
 
         return finalTexCoords - uv;
+    #endif
+}
+
+//Detail Map
+inline float4 SAMPLE2D_DETAILMAP_TK(Texture2D tex, SamplerState samplerState, float2 uv, float4 uv_ST,
+float3 pos, float3 normal, int2 pixelId)
+{
+    #if defined(_MAPPINGMODE_NONE)
+        return SAMPLE2D_GRAD_TK(tex, samplerState, uv * uv_ST.xy + uv_ST.zw);
+    #elif defined(_MAPPINGMODE_TRIPLANAR)
+        return TriplanarMapping_TK(tex, samplerState, pos, normal, uv_ST);
+    #elif defined(_MAPPINGMODE_BIPLANAR)
+        return BilpanarMapping_TK(tex, samplerState, pos, normal, uv_ST);
+    #elif defined(_MAPPINGMODE_DITHER_TRIPLANAR)
+        return DitherTriplanarMapping_TK(tex, samplerState, pos, normal, pixelId, uv_ST);
+    #elif defined(_MAPPINGMODE_XYZMASK)
+        return XYZMask_Mapping_TK(tex, samplerState, uv_ST, pos, normal);
+    #else
+        return SAMPLE2D_GRAD_TK(tex, samplerState, uv * uv_ST.xy + uv_ST.zw);
+    #endif
+}
+
+inline float3 SAMPLE2D_DETAILNORMALMAP_TK(Texture2D tex, SamplerState samplerState, float2 uv, float4 uv_ST,
+float3 pos, float3 normal, float3 worldTangent, float3 worldBinormal, int2 pixelId, float normal_scale)
+{
+    #if defined(_MAPPINGMODE_NONE)
+        float3 texNormal = UNPACK_NORMAL_TK(SAMPLE2D_TK(tex, samplerState, uv * uv_ST.xy + uv_ST.zw), normal_scale);
+        return normalize(localToWorld(worldTangent, normal, worldBinormal, float3(texNormal.x, texNormal.z, texNormal.y)));
+    #elif defined(_MAPPINGMODE_TRIPLANAR)
+        return normalize(TriplanarMappingNormal_TK(tex, samplerState, pos, normal, uv_ST, normal_scale));
+    #elif defined(_MAPPINGMODE_BIPLANAR)
+        float3 texNormal = BilpanarMappingNormal_TK(tex, samplerState, pos, normal, uv_ST, normal_scale);
+        return localToWorld(worldTangent, normal, worldBinormal, float3(texNormal.x, texNormal.z, texNormal.y));
+    #elif defined(_MAPPINGMODE_DITHER_TRIPLANAR)
+        float3 texNormal = DitherTriplanarMappingNormal_TK(tex, samplerState, pos, normal, pixelId, uv_ST, normal_scale);
+        return normalize(localToWorld(worldTangent, normal, worldBinormal, float3(texNormal.x, texNormal.z, texNormal.y)));
+    #elif defined(_MAPPINGMODE_XYZMASK)
+        float3 texNormal = XYZMask_MappingNormal_TK(tex, samplerState, uv_ST, pos, normal, normal_scale);
+        return normalize(localToWorld(worldTangent, normal, worldBinormal, float3(texNormal.x, texNormal.z, texNormal.y)));
+    #else
+        float3 texNormal = UNPACK_NORMAL_TK(SAMPLE2D_TK(tex, samplerState, uv * uv_ST.xy + uv_ST.zw), normal_scale);
+        return normalize(localToWorld(worldTangent, normal, worldBinormal, float3(texNormal.x, texNormal.z, texNormal.y)));
     #endif
 }
 

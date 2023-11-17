@@ -56,6 +56,11 @@ static inline float3 ShlickFresnelF0(float3 F0, float wdotn)
     return F0 + (1.0f - F0) * term1 * term1 * term1 * term1 * term1;
 }
 
+inline float3 DetailMapCombineTK(float3 maintex, float3 detailtex, float mask)
+{
+    return lerp(maintex, detailtex, mask);
+}
+
 void SetMaterialParameterTK(inout MaterialParameter matParam, MappingInfoTK mapInfo, inout float3 shadingNormal)
 {
     float3 viewDir = worldToLocal(mapInfo.worldTangent, mapInfo.worldNormal, mapInfo.worldBinormal, mapInfo.viewDir);
@@ -72,7 +77,26 @@ void SetMaterialParameterTK(inout MaterialParameter matParam, MappingInfoTK mapI
     matParam.emission = _EmissionColor * SAMPLE2D_MAINTEX_TK(_EmissionMap, sampler_EmissionMap, mapInfo.uv, _EmissionMap_ST + uvOffset, mapInfo.worldPos, mapInfo.worldNormal, mapInfo.pixelId);
 
     shadingNormal = normalize(SAMPLE2D_NORMALMAP_TK(_BumpMap, sampler_BumpMap, mapInfo.uv, _BumpMap_ST + uvOffset,
-    mapInfo.worldPos, mapInfo.worldNormal, mapInfo.worldTangent, mapInfo.worldBinormal, mapInfo.pixelId));
+    mapInfo.worldPos, mapInfo.worldNormal, mapInfo.worldTangent, mapInfo.worldBinormal, mapInfo.pixelId, _BumpScale));
+    
+
+
+    #if defined(_TK_DETAIL_ON)
+        float detail_mask = SAMPLE2D_MAINTEX_TK(_DetailMaskMap, sampler_MainTex, mapInfo.uv, _DetailMaskMap_ST + uvOffset, mapInfo.worldPos, mapInfo.worldNormal, mapInfo.pixelId).r * _DetailMaskFactor;
+        float3 detail_basecolor = SAMPLE2D_MAINTEX_TK(_DetailAlbedoMap, sampler_MainTex, mapInfo.uv, _DetailAlbedoMap_ST + uvOffset, mapInfo.worldPos, mapInfo.worldNormal, mapInfo.pixelId).rgb * _DetailAlbedo;
+        float detail_roughness = SAMPLE2D_MAINTEX_TK(_DetailRoughnessMap, sampler_MainTex, mapInfo.uv, _DetailRoughnessMap_ST + uvOffset, mapInfo.worldPos, mapInfo.worldNormal, mapInfo.pixelId).r * _DetailRoughness;
+        float detail_metallic = SAMPLE2D_MAINTEX_TK(_DetailMetallicMap, sampler_MainTex, mapInfo.uv, _DetailMetallicMap_ST + uvOffset, mapInfo.worldPos, mapInfo.worldNormal, mapInfo.pixelId).r * _DetailMetallic;
+        float3 detail_normal = SAMPLE2D_DETAILNORMALMAP_TK(_DetailNormalMap, sampler_MainTex, mapInfo.uv, _DetailNormalMap_ST + uvOffset, mapInfo.worldPos, mapInfo.worldNormal, mapInfo.worldTangent, mapInfo.worldBinormal, mapInfo.pixelId, _DetalNormalMapScale);
+
+        matParam.basecolor = DetailMapCombineTK(matParam.basecolor, detail_basecolor, detail_mask);
+        matParam.roughness = DetailMapCombineTK(matParam.roughness, detail_roughness, detail_mask).r;
+        matParam.metallic = DetailMapCombineTK(matParam.metallic, detail_metallic, detail_mask).r;
+
+        float3 blendnormal = BlendNormals(shadingNormal, detail_normal);
+        shadingNormal = lerp(shadingNormal, blendnormal, detail_mask);
+
+    #endif
+
     //ThinFilm Parametor
     #if defined(_TK_THINFILM_ON)
         float thickness_value = SAMPLE2D_MAINTEX_TK(_ThinFilmMiddleThicknessMap, sampler_MainTex, mapInfo.uv, _ThinFilmMiddleThicknessMap_ST + uvOffset, mapInfo.worldPos, mapInfo.worldNormal, mapInfo.pixelId) * _ThinFilmMiddleThickness;
