@@ -213,7 +213,7 @@ fixed4 FragTKStandardForwardBase(TKStandardVertexOutput i) : SV_Target
     #if defined(_MAPPINGMODE_UV2)
         mapInfo.uv = i.uv;
     #endif
-    
+
     mapInfo.detail_uv = i.uv;
     #if defined(_TK_DETAIL_MAPPINGMODE_UV2)
         mapInfo.detail_uv = i.uv2;
@@ -319,15 +319,15 @@ fixed4 FragTKStandardForwardBase(TKStandardVertexOutput i) : SV_Target
 
     #if defined(_ADDLIGHTMAP1_ON)
         float3 addLightMap1 = lightMapEvaluate(_AddLightmap1, i.lightmapUV.xy);
-        shade_color += addLightMap1 * _AddLightmap1_Power;
+        shade_color += addLightMap1 * _AddLightmap1_Power * matParam.basecolor;
     #endif
     #if defined(_ADDLIGHTMAP2_ON)
         float3 addLightMap2 = lightMapEvaluate(_AddLightmap2, i.lightmapUV.xy);
-        shade_color += addLightMap2 * _AddLightmap2_Power;
+        shade_color += addLightMap2 * _AddLightmap2_Power * matParam.basecolor;
     #endif
     #if defined(_ADDLIGHTMAP3_ON)
         float3 addLightMap3 = lightMapEvaluate(_AddLightmap3, i.lightmapUV.xy);
-        shade_color += addLightMap3 * _AddLightmap3_Power;
+        shade_color += addLightMap3 * _AddLightmap3_Power * matParam.basecolor;
     #endif
 
     //Debug

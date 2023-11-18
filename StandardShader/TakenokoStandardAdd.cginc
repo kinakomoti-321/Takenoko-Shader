@@ -42,6 +42,28 @@ Texture2D _PallaxMap;
 SamplerState sampler_PallaxMap;
 float4 _PallaxMap_ST;
 
+#if defined(_TK_DETAIL_ON)
+    float _DetailMaskFactor;
+    Texture2D _DetailMaskMap;
+    float4 _DetailMaskMap_ST;
+
+    float3 _DetailAlbedo;
+    Texture2D _DetailAlbedoMap;
+    float4 _DetailAlbedoMap_ST;
+
+    float _DetailRoughness;
+    Texture2D _DetailRoughnessMap;
+    float4 _DetailRoughnessMap_ST;
+
+    float _DetailMetallic;
+    Texture2D _DetailMetallicMap;
+    float4 _DetailMetallicMap_ST;
+
+    float _DetalNormalMapScale;
+    Texture2D _DetailNormalMap;
+    float4 _DetailNormalMap_ST;
+#endif
+
 #if defined(_TK_THINFILM_ON)
     Texture2D _ThinFilmMaskMap;
     float4 _ThinFilmMaskMap_ST;
@@ -52,6 +74,23 @@ float4 _PallaxMap_ST;
     float _ThinFilmMiddleThicknessMax;
     Texture2D _ThinFilmMiddleThicknessMap;
     float4 _ThinFilmMiddleThicknessMap_ST;
+#endif
+
+#if defined(_TK_CLOTH_ON)
+    float4 _ClothAlbedo1;
+    float4 _ClothAlbedo2;
+    float _ClothIOR1;
+    float _ClothIOR2;
+    float _ClothKd1;
+    float _ClothKd2;
+    float _ClothGammaV1;
+    float _ClothGammaV2;
+    float _ClothGammaS1;
+    float _ClothGammaS2;
+    float _ClothAlpha1;
+    float _ClothAlpha2;
+    float _ClothTangentOffset1;
+    float _ClothTangentOffset2;
 #endif
 
 #include "TakenokoLightmap.cginc"
@@ -147,6 +186,14 @@ fixed4 FragTKStandardAdd(TKStandardVertexOutput i) : SV_Target
     mapInfo.worldBinormal = i.worldBinormal;
     mapInfo.viewDir = viewDirection;
     mapInfo.uv = i.uv;
+    #if defined(_MAPPINGMODE_UV2)
+        mapInfo.uv = i.uv;
+    #endif
+    
+    mapInfo.detail_uv = i.uv;
+    #if defined(_TK_DETAIL_MAPPINGMODE_UV2)
+        mapInfo.detail_uv = i.uv2;
+    #endif
 
     MaterialParameter matParam;
     float3 shadingNormal;
@@ -191,6 +238,9 @@ fixed4 FragTKStandardAdd(TKStandardVertexOutput i) : SV_Target
 
     shade_color = diffuse * (1.0 - matParam.metallic) + specular;
     //shade_color = attenuation;
+    #if !defined(_DEBUGMODE_NONE)
+        shade_color = 0.0;
+    #endif
     return fixed4(shade_color, matParam.alpha);
 }
 #endif
