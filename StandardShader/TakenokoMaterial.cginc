@@ -88,8 +88,6 @@ void SetMaterialParameterTK(inout MaterialParameter matParam, MappingInfoTK mapI
 
     shadingNormal = normalize(SAMPLE2D_NORMALMAP_TK(_BumpMap, sampler_BumpMap, mapInfo.uv, _BumpMap_ST + uvOffset,
     mapInfo.worldPos, mapInfo.worldNormal, mapInfo.worldTangent, mapInfo.worldBinormal, mapInfo.pixelId, _BumpScale));
-    
-
 
     #if defined(_TK_DETAIL_ON)
         float detail_mask = SAMPLE2D_DETAILMAP_TK(_DetailMaskMap, sampler_MainTex, mapInfo.uv, _DetailMaskMap_ST + uvOffset, mapInfo.worldPos, mapInfo.worldNormal, mapInfo.pixelId).r * _DetailMaskFactor;
@@ -98,14 +96,16 @@ void SetMaterialParameterTK(inout MaterialParameter matParam, MappingInfoTK mapI
         float detail_metallic = SAMPLE2D_DETAILMAP_TK(_DetailMetallicMap, sampler_MainTex, mapInfo.uv, _DetailMetallicMap_ST + uvOffset, mapInfo.worldPos, mapInfo.worldNormal, mapInfo.pixelId).r * _DetailMetallic;
         float3 detail_normal = SAMPLE2D_DETAILNORMALMAP_TK(_DetailNormalMap, sampler_MainTex, mapInfo.uv, _DetailNormalMap_ST + uvOffset, mapInfo.worldPos, mapInfo.worldNormal, mapInfo.worldTangent, mapInfo.worldBinormal, mapInfo.pixelId, _DetalNormalMapScale);
 
-        matParam.basecolor = DetailMapCombineTK(matParam.basecolor, detail_basecolor, detail_mask);
-        matParam.roughness = DetailMapCombineTK(matParam.roughness, detail_roughness, detail_mask).r;
-        matParam.metallic = DetailMapCombineTK(matParam.metallic, detail_metallic, detail_mask).r;
+        matParam.basecolor = clamp(DetailMapCombineTK(matParam.basecolor, detail_basecolor, detail_mask), 0.0, 1.0);
+        matParam.roughness = clamp(DetailMapCombineTK(matParam.roughness, detail_roughness, detail_mask).r, 0.0, 1.0);
+        matParam.metallic = clamp(DetailMapCombineTK(matParam.metallic, detail_metallic, detail_mask).r, 0.0, 1.0);
 
         float3 blendnormal = BlendNormals(shadingNormal, detail_normal);
         shadingNormal = lerp(shadingNormal, blendnormal, detail_mask);
-
+        //shadingNormal = blendnormal;
     #endif
+
+    shadingNormal = normalize(localToWorld(mapInfo.worldTangent, mapInfo.worldNormal, mapInfo.worldBinormal, float3(shadingNormal.x, shadingNormal.z, shadingNormal.y)));
 
     //ThinFilm Parametor
     #if defined(_TK_THINFILM_ON)
