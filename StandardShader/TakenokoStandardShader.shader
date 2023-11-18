@@ -60,6 +60,9 @@
 
         //Detail Map
         [Toggle(_TK_DETAIL_ON)] _Detail_ON ("Detail", Float) = 0.0
+        [Enum(Linner, 0, Multiply, 1, Addition, 2, Subtract, 3)] _DetailBlendMode ("Detail Map Blend", Float) = 0.0
+        [Enum(None, 0, Triplanar, 1, Biplanar, 2, DitheredTriplanar, 3, XYZMask, 4)] _DetailMappingMode ("Detail Mapping Mode", Int) = 0
+        [Enum(None, 0, Stochastic, 1, HexTiling, 2, Volonoi, 3)] _DetailSamplerMode ("Sampler Mode", Int) = 0
 
         _DetailMaskFactor ("Detail Mask Factor", Range(0.0, 1.0)) = 0.5
         _DetailMaskMap ("Detail Mask Map", 2D) = "white" { }
@@ -166,6 +169,9 @@
             #pragma shader_feature_local _MAPPING_POS_OBJ
 
             #pragma shader_feature_local _TK_DETAIL_ON
+            #pragma multi_compile_local _ _TK_DETAIL_BLEND_LINNER _TK_DETAIL_BLEND_MULTIPLY _TK_DETAIL_BLEND_ADD _TK_DETAIL_BLEND_SUBTRACT
+            #pragma multi_compile_local _TK_DETAIL_MAPPINGMODE_NONE _TK_DETAIL_MAPPINGMODE_TRIPLANAR _TK_DETAIL_MAPPINGMODE_BIPLANAR _TK_DETAIL_MAPPINGMODE_DITHER_TRIPLANAR _TK_DETAIL_MAPPINGMODE_XYZMASK
+            #pragma multi_compile_local _TK_DETAIL_SAMPLERMODE_NONE _TK_DETAIL_SAMPLERMODE_STOCHASTIC _TK_DETAIL_SAMPLERMODE_HEX _TK_DETAIL_SAMPLERMODE_VOLONOI
 
             #pragma shader_feature_local _TK_THINFILM_ON
             #pragma shader_feature_local _TK_THINFILM_USE_MAP

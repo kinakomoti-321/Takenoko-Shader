@@ -10,7 +10,6 @@ using UnityEngine;
 
 public class TakenokoStandardGUI : ShaderGUI
 {
-    private bool _MainTexMenuOn = false;
     private enum LightmapFormatEnum
     {
         None,
@@ -64,6 +63,14 @@ public class TakenokoStandardGUI : ShaderGUI
         Transparent
     }
 
+    public enum DetailBlendModeEnum
+    {
+        Linner,
+        Multiply,
+        Add,
+        Subtract,
+    }
+
     MaterialProperty MappingMode;
     MaterialProperty MappingPosObj;
     MaterialProperty SamplerMode;
@@ -86,6 +93,9 @@ public class TakenokoStandardGUI : ShaderGUI
 
     //DetailMaps
     MaterialProperty Detail_ON;
+    MaterialProperty DetailBlendMode;
+    MaterialProperty DetailMappingMode;
+    MaterialProperty DetailSamplerMode;
     MaterialProperty DetailMaskFactor;
     MaterialProperty DetailMaskMap;
     MaterialProperty DetailAlbedo;
@@ -252,6 +262,18 @@ public class TakenokoStandardGUI : ShaderGUI
                     materialEditor.ShaderProperty(Detail_ON, "Use Detail Map");
                     if (Detail_ON.floatValue > 0.0)
                     {
+                        DetailBlendModeEnum detailBlendMode = (DetailBlendModeEnum)DetailBlendMode.floatValue;
+                        detailBlendMode = (DetailBlendModeEnum)EditorGUILayout.Popup("Detail Blend Mode", (int)detailBlendMode, Enum.GetNames(typeof(DetailBlendModeEnum)));
+                        DetailBlendMode.floatValue = (float)detailBlendMode;
+
+                        MappingModeEnum detailMappingMode = (MappingModeEnum)DetailMappingMode.floatValue;
+                        detailMappingMode = (MappingModeEnum)EditorGUILayout.Popup("Detail Mapping Mode", (int)detailMappingMode, Enum.GetNames(typeof(MappingModeEnum)));
+                        DetailMappingMode.floatValue = (float)detailMappingMode;
+
+                        SamplerModeEnum detalSamplerMode = (SamplerModeEnum)DetailSamplerMode.floatValue;
+                        detalSamplerMode = (SamplerModeEnum)EditorGUILayout.Popup("Detail Sampler Mode", (int)detalSamplerMode, Enum.GetNames(typeof(SamplerModeEnum)));
+                        DetailSamplerMode.floatValue = (float)detalSamplerMode;
+
                         materialEditor.ShaderProperty(DetailMaskFactor, "Detail Mask Factor");
                         materialEditor.ShaderProperty(DetailMaskMap, "Detail Mask Map");
                         GUILayout.Space(10);
@@ -479,6 +501,9 @@ public class TakenokoStandardGUI : ShaderGUI
         EmissionMap = FindProperty("_EmissionMap", properties);
 
         Detail_ON = FindProperty("_Detail_ON", properties);
+        DetailBlendMode = FindProperty("_DetailBlendMode", properties);
+        DetailMappingMode = FindProperty("_DetailMappingMode", properties);
+        DetailSamplerMode = FindProperty("_DetailSamplerMode", properties);
         DetailMaskFactor = FindProperty("_DetailMaskFactor", properties);
         DetailMaskMap = FindProperty("_DetailMaskMap", properties);
         DetailAlbedo = FindProperty("_DetailAlbedo", properties);
@@ -673,6 +698,106 @@ public class TakenokoStandardGUI : ShaderGUI
                 SetKeyward(material, "_PARALLAXMODE_STEEP", true);
                 break;
         }
+        MappingModeEnum detailMappingMode = (MappingModeEnum)DetailMappingMode.floatValue;
+        switch (detailMappingMode)
+        {
+            case MappingModeEnum.UV:
+                SetKeyward(material, "_TK_DETAIL_MAPPINGMODE_NONE", true);
+                SetKeyward(material, "_TK_DETAIL_MAPPINGMODE_TRIPLANAR", false);
+                SetKeyward(material, "_TK_DETAIL_MAPPINGMODE_BIPLANAR", false);
+                SetKeyward(material, "_TK_DETAIL_MAPPINGMODE_DITHER_TRIPLANAR", false);
+                SetKeyward(material, "_TK_DETAIL_MAPPINGMODE_XYZMASK", false);
+                break;
+            case MappingModeEnum.Triplanar:
+                SetKeyward(material, "_TK_DETAIL_MAPPINGMODE_NONE", false);
+                SetKeyward(material, "_TK_DETAIL_MAPPINGMODE_TRIPLANAR", true);
+                SetKeyward(material, "_TK_DETAIL_MAPPINGMODE_BIPLANAR", false);
+                SetKeyward(material, "_TK_DETAIL_MAPPINGMODE_DITHER_TRIPLANAR", false);
+                SetKeyward(material, "_TK_DETAIL_MAPPINGMODE_XYZMASK", false);
+                break;
+            case MappingModeEnum.Biplanar:
+                SetKeyward(material, "_TK_DETAIL_MAPPINGMODE_NONE", false);
+                SetKeyward(material, "_TK_DETAIL_MAPPINGMODE_TRIPLANAR", false);
+                SetKeyward(material, "_TK_DETAIL_MAPPINGMODE_BIPLANAR", true);
+                SetKeyward(material, "_TK_DETAIL_MAPPINGMODE_DITHER_TRIPLANAR", false);
+                SetKeyward(material, "_TK_DETAIL_MAPPINGMODE_XYZMASK", false);
+                break;
+            case MappingModeEnum.DitheredTriplanar:
+                SetKeyward(material, "_TK_DETAIL_MAPPINGMODE_NONE", false);
+                SetKeyward(material, "_TK_DETAIL_MAPPINGMODE_TRIPLANAR", false);
+                SetKeyward(material, "_TK_DETAIL_MAPPINGMODE_BIPLANAR", false);
+                SetKeyward(material, "_TK_DETAIL_MAPPINGMODE_DITHER_TRIPLANAR", true);
+                SetKeyward(material, "_TK_DETAIL_MAPPINGMODE_XYZMASK", false);
+                break;
+            case MappingModeEnum.XYZMask:
+                SetKeyward(material, "_TK_DETAIL_MAPPINGMODE_NONE", false);
+                SetKeyward(material, "_TK_DETAIL_MAPPINGMODE_TRIPLANAR", false);
+                SetKeyward(material, "_TK_DETAIL_MAPPINGMODE_BIPLANAR", false);
+                SetKeyward(material, "_TK_DETAIL_MAPPINGMODE_DITHER_TRIPLANAR", false);
+                SetKeyward(material, "_TK_DETAIL_MAPPINGMODE_XYZMASK", true);
+                break;
+
+        }
+        DetailBlendModeEnum detailBlendMode = (DetailBlendModeEnum)DetailBlendMode.floatValue;
+        switch (detailBlendMode)
+        {
+            case DetailBlendModeEnum.Linner:
+                SetKeyward(material, "_TK_DETAIL_BLEND_LINNER", true);
+                SetKeyward(material, "_TK_DETAIL_BLEND_MULTIPLY", false);
+                SetKeyward(material, "_TK_DETAIL_BLEND_ADD", false);
+                SetKeyward(material, "_TK_DETAIL_BLEND_SUBTRACT", false);
+                break;
+            case DetailBlendModeEnum.Multiply:
+                SetKeyward(material, "_TK_DETAIL_BLEND_LINNER", false);
+                SetKeyward(material, "_TK_DETAIL_BLEND_MULTIPLY", true);
+                SetKeyward(material, "_TK_DETAIL_BLEND_ADD", false);
+                SetKeyward(material, "_TK_DETAIL_BLEND_SUBTRACT", false);
+                break;
+            case DetailBlendModeEnum.Add:
+                SetKeyward(material, "_TK_DETAIL_BLEND_LINNER", false);
+                SetKeyward(material, "_TK_DETAIL_BLEND_MULTIPLY", false);
+                SetKeyward(material, "_TK_DETAIL_BLEND_ADD", true);
+                SetKeyward(material, "_TK_DETAIL_BLEND_SUBTRACT", false);
+                break;
+            case DetailBlendModeEnum.Subtract:
+                SetKeyward(material, "_TK_DETAIL_BLEND_LINNER", false);
+                SetKeyward(material, "_TK_DETAIL_BLEND_MULTIPLY", false);
+                SetKeyward(material, "_TK_DETAIL_BLEND_ADD", false);
+                SetKeyward(material, "_TK_DETAIL_BLEND_SUBTRACT", true);
+                break;
+        }
+
+        SamplerModeEnum detailSamplerMode = (SamplerModeEnum)DetailSamplerMode.floatValue;
+
+        switch (detailSamplerMode)
+        {
+            case SamplerModeEnum.None:
+                SetKeyward(material, "_TK_DETAIL_SAMPLERMODE_NONE", true);
+                SetKeyward(material, "_TK_DETAIL_SAMPLERMODE_STOCHASTIC", false);
+                SetKeyward(material, "_TK_DETAIL_SAMPLERMODE_HEX", false);
+                SetKeyward(material, "_TK_DETAIL_SAMPLERMODE_VOLONOI", false);
+                break;
+            case SamplerModeEnum.Stochastic:
+                SetKeyward(material, "_TK_DETAIL_SAMPLERMODE_NONE", false);
+                SetKeyward(material, "_TK_DETAIL_SAMPLERMODE_STOCHASTIC", true);
+                SetKeyward(material, "_TK_DETAIL_SAMPLERMODE_HEX", false);
+                SetKeyward(material, "_TK_DETAIL_SAMPLERMODE_VOLONOI", false);
+                break;
+                // case SamplerModeEnum.Hex:
+                //     SetKeyward(material, "_TK_DETAIL_SAMPLERMODE_NONE", false);
+                //     SetKeyward(material, "_TK_DETAIL_SAMPLERMODE_STOCHASTIC", false);
+                //     SetKeyward(material, "_TK_DETAIL_SAMPLERMODE_HEX", true);
+                //     SetKeyward(material, "_TK_DETAIL_SAMPLERMODE_VOLONOI", false);
+                //     break;
+                // case SamplerModeEnum.Volonoi:
+                //     SetKeyward(material, "_TK_DETAIL_SAMPLERMODE_NONE", false);
+                //     SetKeyward(material, "_TK_DETAIL_SAMPLERMODE_STOCHASTIC", false);
+                //     SetKeyward(material, "_TK_DETAIL_SAMPLERMODE_HEX", false);
+                //     SetKeyward(material, "_TK_DETAIL_SAMPLERMODE_VOLONOI", true);
+                //     break;
+        }
+
+
 
         LightmapFormatEnum lightmapFormat = (LightmapFormatEnum)LightmapMode.floatValue;
 
