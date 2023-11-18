@@ -27,6 +27,7 @@ public class TakenokoStandardGUI : ShaderGUI
     private enum MappingModeEnum
     {
         UV,
+        UV2,
         Triplanar,
         Biplanar,
         DitheredTriplanar,
@@ -53,6 +54,8 @@ public class TakenokoStandardGUI : ShaderGUI
         None,
         BaseColor,
         Normal,
+        UV1,
+        UV2
     }
 
     public enum BlendModeEnum
@@ -614,6 +617,15 @@ public class TakenokoStandardGUI : ShaderGUI
         {
             case MappingModeEnum.UV:
                 SetKeyward(material, "_MAPPINGMODE_NONE", true);
+                SetKeyward(material, "_MAPPINGMODE_UV2", false);
+                SetKeyward(material, "_MAPPINGMODE_TRIPLANAR", false);
+                SetKeyward(material, "_MAPPINGMODE_BIPLANAR", false);
+                SetKeyward(material, "_MAPPINGMODE_DITHER_TRIPLANAR", false);
+                SetKeyward(material, "_MAPPINGMODE_XYZMASK", false);
+                break;
+            case MappingModeEnum.UV2:
+                SetKeyward(material, "_MAPPINGMODE_NONE", false);
+                SetKeyward(material, "_MAPPINGMODE_UV2", true);
                 SetKeyward(material, "_MAPPINGMODE_TRIPLANAR", false);
                 SetKeyward(material, "_MAPPINGMODE_BIPLANAR", false);
                 SetKeyward(material, "_MAPPINGMODE_DITHER_TRIPLANAR", false);
@@ -621,6 +633,7 @@ public class TakenokoStandardGUI : ShaderGUI
                 break;
             case MappingModeEnum.Triplanar:
                 SetKeyward(material, "_MAPPINGMODE_NONE", false);
+                SetKeyward(material, "_MAPPINGMODE_UV2", false);
                 SetKeyward(material, "_MAPPINGMODE_TRIPLANAR", true);
                 SetKeyward(material, "_MAPPINGMODE_BIPLANAR", false);
                 SetKeyward(material, "_MAPPINGMODE_DITHER_TRIPLANAR", false);
@@ -628,6 +641,7 @@ public class TakenokoStandardGUI : ShaderGUI
                 break;
             case MappingModeEnum.Biplanar:
                 SetKeyward(material, "_MAPPINGMODE_NONE", false);
+                SetKeyward(material, "_MAPPINGMODE_UV2", false);
                 SetKeyward(material, "_MAPPINGMODE_TRIPLANAR", false);
                 SetKeyward(material, "_MAPPINGMODE_BIPLANAR", true);
                 SetKeyward(material, "_MAPPINGMODE_DITHER_TRIPLANAR", false);
@@ -635,6 +649,7 @@ public class TakenokoStandardGUI : ShaderGUI
                 break;
             case MappingModeEnum.DitheredTriplanar:
                 SetKeyward(material, "_MAPPINGMODE_NONE", false);
+                SetKeyward(material, "_MAPPINGMODE_UV2", false);
                 SetKeyward(material, "_MAPPINGMODE_TRIPLANAR", false);
                 SetKeyward(material, "_MAPPINGMODE_BIPLANAR", false);
                 SetKeyward(material, "_MAPPINGMODE_DITHER_TRIPLANAR", true);
@@ -642,6 +657,7 @@ public class TakenokoStandardGUI : ShaderGUI
                 break;
             case MappingModeEnum.XYZMask:
                 SetKeyward(material, "_MAPPINGMODE_NONE", false);
+                SetKeyward(material, "_MAPPINGMODE_UV2", false);
                 SetKeyward(material, "_MAPPINGMODE_TRIPLANAR", false);
                 SetKeyward(material, "_MAPPINGMODE_BIPLANAR", false);
                 SetKeyward(material, "_MAPPINGMODE_DITHER_TRIPLANAR", false);
@@ -703,6 +719,15 @@ public class TakenokoStandardGUI : ShaderGUI
         {
             case MappingModeEnum.UV:
                 SetKeyward(material, "_TK_DETAIL_MAPPINGMODE_NONE", true);
+                SetKeyward(material, "_TK_DETAIL_MAPPINGMODE_UV2", false);
+                SetKeyward(material, "_TK_DETAIL_MAPPINGMODE_TRIPLANAR", false);
+                SetKeyward(material, "_TK_DETAIL_MAPPINGMODE_BIPLANAR", false);
+                SetKeyward(material, "_TK_DETAIL_MAPPINGMODE_DITHER_TRIPLANAR", false);
+                SetKeyward(material, "_TK_DETAIL_MAPPINGMODE_XYZMASK", false);
+                break;
+            case MappingModeEnum.UV2:
+                SetKeyward(material, "_TK_DETAIL_MAPPINGMODE_NONE", false);
+                SetKeyward(material, "_TK_DETAIL_MAPPINGMODE_UV2", true);
                 SetKeyward(material, "_TK_DETAIL_MAPPINGMODE_TRIPLANAR", false);
                 SetKeyward(material, "_TK_DETAIL_MAPPINGMODE_BIPLANAR", false);
                 SetKeyward(material, "_TK_DETAIL_MAPPINGMODE_DITHER_TRIPLANAR", false);
@@ -710,6 +735,7 @@ public class TakenokoStandardGUI : ShaderGUI
                 break;
             case MappingModeEnum.Triplanar:
                 SetKeyward(material, "_TK_DETAIL_MAPPINGMODE_NONE", false);
+                SetKeyward(material, "_TK_DETAIL_MAPPINGMODE_UV2", false);
                 SetKeyward(material, "_TK_DETAIL_MAPPINGMODE_TRIPLANAR", true);
                 SetKeyward(material, "_TK_DETAIL_MAPPINGMODE_BIPLANAR", false);
                 SetKeyward(material, "_TK_DETAIL_MAPPINGMODE_DITHER_TRIPLANAR", false);
@@ -717,6 +743,7 @@ public class TakenokoStandardGUI : ShaderGUI
                 break;
             case MappingModeEnum.Biplanar:
                 SetKeyward(material, "_TK_DETAIL_MAPPINGMODE_NONE", false);
+                SetKeyward(material, "_TK_DETAIL_MAPPINGMODE_UV2", false);
                 SetKeyward(material, "_TK_DETAIL_MAPPINGMODE_TRIPLANAR", false);
                 SetKeyward(material, "_TK_DETAIL_MAPPINGMODE_BIPLANAR", true);
                 SetKeyward(material, "_TK_DETAIL_MAPPINGMODE_DITHER_TRIPLANAR", false);
@@ -724,6 +751,7 @@ public class TakenokoStandardGUI : ShaderGUI
                 break;
             case MappingModeEnum.DitheredTriplanar:
                 SetKeyward(material, "_TK_DETAIL_MAPPINGMODE_NONE", false);
+                SetKeyward(material, "_TK_DETAIL_MAPPINGMODE_UV2", false);
                 SetKeyward(material, "_TK_DETAIL_MAPPINGMODE_TRIPLANAR", false);
                 SetKeyward(material, "_TK_DETAIL_MAPPINGMODE_BIPLANAR", false);
                 SetKeyward(material, "_TK_DETAIL_MAPPINGMODE_DITHER_TRIPLANAR", true);
@@ -731,6 +759,7 @@ public class TakenokoStandardGUI : ShaderGUI
                 break;
             case MappingModeEnum.XYZMask:
                 SetKeyward(material, "_TK_DETAIL_MAPPINGMODE_NONE", false);
+                SetKeyward(material, "_TK_DETAIL_MAPPINGMODE_UV2", false);
                 SetKeyward(material, "_TK_DETAIL_MAPPINGMODE_TRIPLANAR", false);
                 SetKeyward(material, "_TK_DETAIL_MAPPINGMODE_BIPLANAR", false);
                 SetKeyward(material, "_TK_DETAIL_MAPPINGMODE_DITHER_TRIPLANAR", false);
@@ -847,16 +876,36 @@ public class TakenokoStandardGUI : ShaderGUI
                 SetKeyward(material, "_DEBUGMODE_NONE", true);
                 SetKeyward(material, "_DEBUGMODE_BASECOLOR", false);
                 SetKeyward(material, "_DEBUGMODE_NORMAL", false);
+                SetKeyward(material, "_DEBUGMODE_UV1", false);
+                SetKeyward(material, "_DEBUGMODE_UV2", false);
                 break;
             case DebugModeEnum.BaseColor:
                 SetKeyward(material, "_DEBUGMODE_NONE", false);
                 SetKeyward(material, "_DEBUGMODE_BASECOLOR", true);
                 SetKeyward(material, "_DEBUGMODE_NORMAL", false);
+                SetKeyward(material, "_DEBUGMODE_UV1", false);
+                SetKeyward(material, "_DEBUGMODE_UV2", false);
                 break;
             case DebugModeEnum.Normal:
                 SetKeyward(material, "_DEBUGMODE_NONE", false);
                 SetKeyward(material, "_DEBUGMODE_BASECOLOR", false);
                 SetKeyward(material, "_DEBUGMODE_NORMAL", true);
+                SetKeyward(material, "_DEBUGMODE_UV1", false);
+                SetKeyward(material, "_DEBUGMODE_UV2", false);
+                break;
+            case DebugModeEnum.UV1:
+                SetKeyward(material, "_DEBUGMODE_NONE", false);
+                SetKeyward(material, "_DEBUGMODE_BASECOLOR", false);
+                SetKeyward(material, "_DEBUGMODE_NORMAL", false);
+                SetKeyward(material, "_DEBUGMODE_UV1", true);
+                SetKeyward(material, "_DEBUGMODE_UV2", false);
+                break;
+            case DebugModeEnum.UV2:
+                SetKeyward(material, "_DEBUGMODE_NONE", false);
+                SetKeyward(material, "_DEBUGMODE_BASECOLOR", false);
+                SetKeyward(material, "_DEBUGMODE_NORMAL", false);
+                SetKeyward(material, "_DEBUGMODE_UV1", true);
+                SetKeyward(material, "_DEBUGMODE_UV2", false);
                 break;
         }
     }

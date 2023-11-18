@@ -150,6 +150,8 @@ struct TKStandardVertexOutput
     float3 objectPos : TEXCOORD10;
     float3 objectNormal : TEXCOORD11;
 
+    float2 uv2 : TEXCOORD12;
+
     UNITY_VERTEX_INPUT_INSTANCE_ID
     UNITY_VERTEX_OUTPUT_STEREO
 };
@@ -164,6 +166,7 @@ TKStandardVertexOutput VertTKStandardForwardBase(TKStandardVertexInput v)
 
     o.pos = UnityObjectToClipPos(v.vertex);
     o.uv = v.texcoord0;
+    o.uv2 = v.texcoord1;
     float3 worldPos = mul(unity_ObjectToWorld, v.vertex).xyz;
     float3 worldNormal = UnityObjectToWorldNormal(v.normal);
     o.worldPos = worldPos;
@@ -207,6 +210,16 @@ fixed4 FragTKStandardForwardBase(TKStandardVertexOutput i) : SV_Target
     mapInfo.worldBinormal = i.worldBinormal;
     mapInfo.viewDir = viewDirection;
     mapInfo.uv = i.uv;
+    #if defined(_MAPPINGMODE_UV2)
+        mapInfo.uv = i.uv;
+    #endif
+    
+    mapInfo.detail_uv = i.uv;
+    #if defined(_TK_DETAIL_MAPPINGMODE_UV2)
+        mapInfo.detail_uv = i.uv2;
+    #endif
+    
+
 
     MaterialParameter matParam;
     float3 shadingNormal;
@@ -322,6 +335,10 @@ fixed4 FragTKStandardForwardBase(TKStandardVertexOutput i) : SV_Target
         shade_color = normalWorld * 0.5 + 0.5;
     #elif defined(_DEBUGMODE_BASECOLOR)
         shade_color = matParam.basecolor;
+    #elif defined(_DEBUGMODE_UV1)
+        shade_color = float3(i.uv, 0);
+    #elif defined(_DEBUGMODE_UV2)
+        shade_color = float3(i.uv2, 0);
     #endif
 
     return fixed4(shade_color, matParam.alpha);

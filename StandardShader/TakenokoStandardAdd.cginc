@@ -87,6 +87,8 @@ struct TKStandardVertexOutput
     float3 objectPos : TEXCOORD10;
     float3 objectNormal : TEXCOORD11;
 
+    float2 uv2 : TEXCOORD12;
+
     UNITY_VERTEX_INPUT_INSTANCE_ID
     UNITY_VERTEX_OUTPUT_STEREO
 };
@@ -101,6 +103,7 @@ TKStandardVertexOutput VertTKStandardAdd(TKStandardVertexInput v)
 
     o.pos = UnityObjectToClipPos(v.vertex);
     o.uv = v.texcoord0;
+    o.uv2 = v.texcoord1;
     float3 worldPos = mul(unity_ObjectToWorld, v.vertex).xyz;
     float3 worldNormal = UnityObjectToWorldNormal(v.normal);
     o.worldPos = worldPos;

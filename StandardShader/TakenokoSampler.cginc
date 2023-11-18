@@ -351,7 +351,7 @@ float3 BlendTriplanarNormal_float(float3 tangent, float3 world)
 inline float4 SAMPLE2D_MAINTEX_TK(Texture2D tex, SamplerState samplerState, float2 uv, float4 uv_ST,
 float3 pos, float3 normal, int2 pixelId)
 {
-    #if defined(_MAPPINGMODE_NONE)
+    #if defined(_MAPPINGMODE_NONE) || defined(_MAPPINGMODE_UV2)
         return SAMPLE2D_GRAD_TK(tex, samplerState, uv * uv_ST.xy + uv_ST.zw);
     #elif defined(_MAPPINGMODE_TRIPLANAR)
         return TriplanarMapping_TK(tex, samplerState, pos, normal, uv_ST);
@@ -370,7 +370,7 @@ inline float3 SAMPLE2D_NORMALMAP_TK(Texture2D tex, SamplerState samplerState, fl
 float3 pos, float3 normal, float3 worldTangent, float3 worldBinormal, int2 pixelId, float normal_scale)
 {
     float3 texNormal;
-    #if defined(_MAPPINGMODE_NONE)
+    #if defined(_MAPPINGMODE_NONE) || defined(_MAPPINGMODE_UV2)
         texNormal = UNPACK_NORMAL_TK(SAMPLE2D_TK(tex, samplerState, uv * uv_ST.xy + uv_ST.zw), normal_scale);
     #elif defined(_MAPPINGMODE_TRIPLANAR)
         float3 sampleNormal = TriplanarMappingNormal_TK(tex, samplerState, pos, normal, uv_ST, normal_scale);
@@ -726,7 +726,7 @@ float3 pos, float3 normal, int2 pixelId, float3 viewDir)
     inline float4 SAMPLE2D_DETAILMAP_TK(Texture2D tex, SamplerState samplerState, float2 uv, float4 uv_ST,
     float3 pos, float3 normal, int2 pixelId)
     {
-        #if defined(_TK_DETAIL_MAPPINGMODE_NONE)
+        #if defined(_TK_DETAIL_MAPPINGMODE_NONE) || defined(_TK_DETAIL_MAPPINGMODE_UV2)
             return SAMPLE2D_DETAIL_GRAD_TK(tex, samplerState, uv * uv_ST.xy + uv_ST.zw);
         #elif defined(_TK_DETAIL_MAPPINGMODE_TRIPLANAR)
             return Detail_TriplanarMapping_TK(tex, samplerState, pos, normal, uv_ST);
@@ -745,7 +745,7 @@ float3 pos, float3 normal, int2 pixelId, float3 viewDir)
     float3 pos, float3 normal, float3 worldTangent, float3 worldBinormal, int2 pixelId, float normal_scale)
     {
         float3 texNormal;
-        #if defined(_TK_DETAIL_MAPPINGMODE_NONE)
+        #if defined(_TK_DETAIL_MAPPINGMODE_NONE) || defined(_TK_DETAIL_MAPPINGMODE_UV2)
             texNormal = UNPACK_NORMAL_TK(SAMPLE2D_DETAIL_TK(tex, samplerState, uv * uv_ST.xy + uv_ST.zw), normal_scale);
         #elif defined(_TK_DETAIL_MAPPINGMODE_TRIPLANAR)
             float3 sampleNormal = normalize(Detail_TriplanarMappingNormal_TK(tex, samplerState, pos, normal, uv_ST, normal_scale));

@@ -29,7 +29,7 @@
         _DebugMenu ("DebugMenu", Float) = 0.0
         _ExperimentalMenu ("ExperimentalMenu", Float) = 0.0
 
-        [Enum(None, 0, Triplanar, 1, Biplanar, 2, DitheredTriplanar, 3, XYZMask, 4)] _MappingMode ("Mapping Mode", Int) = 0
+        [Enum(UV, 0, UV2, 1, Triplanar, 2, Biplanar, 3, DitheredTriplanar, 4, XYZMask, 5)] _MappingMode ("Mapping Mode", Int) = 0
         [Enum(None, 0, Stochastic, 1, HexTiling, 2, Volonoi, 3)] _SamplerMode ("Sampler Mode", Int) = 0
         [Toggle(_MAPPING_POS_OBJ)] _MappingPosObj ("Mapping Position Object", Float) = 0.0
 
@@ -138,7 +138,7 @@
         _Specular_Power ("Specular Power", Range(0.0, 2.0)) = 1.0
         _Diffuse_Power ("Diffuse Power", Range(0.0, 2.0)) = 1.0
 
-        [Enum(None, 0, BaseColor, 1, Normal, 2)] _DebugMode ("Debug Mode", Int) = 0
+        [Enum(None, 0, BaseColor, 1, Normal, 2, UV1, 3, UV2, 4)] _DebugMode ("Debug Mode", Int) = 0
     }
 
 
@@ -158,19 +158,19 @@
             #pragma vertex VertTKStandardForwardBase
             #pragma fragment FragTKStandardForwardBase
             #pragma multi_compile_local _LIGHTMAPMODE_NONE _LIGHTMAPMODE_SH _LIGHTMAPMODE_MONOSH
-            #pragma multi_compile_local _MAPPINGMODE_NONE _MAPPINGMODE_TRIPLANAR _MAPPINGMODE_BIPLANAR _MAPPINGMODE_DITHER_TRIPLANAR _MAPPINGMODE_XYZMASK
+            #pragma multi_compile_local _MAPPINGMODE_NONE _MAPPINGMODE_UV2 _MAPPINGMODE_TRIPLANAR _MAPPINGMODE_BIPLANAR _MAPPINGMODE_DITHER_TRIPLANAR _MAPPINGMODE_XYZMASK
             #pragma multi_compile_local _SAMPLERMODE_NONE _SAMPLERMODE_STOCHASTIC _SAMPLERMODE_HEX _SAMPLERMODE_VOLONOI
             #pragma multi_compile_local _PARALLAXMODE_NONE _PARALLAXMODE_SIMPLE _PARALLAXMODE_STEEP
             
             #pragma shader_feature _ _ALPHATEST_ON _ALPHABLEND_ON _ALPHAPREMULTIPLY_ON
 
-            #pragma multi_compile _DEBUGMODE_NONE _DEBUGMODE_BASECOLOR _DEBUGMODE_NORMAL
+            #pragma multi_compile _DEBUGMODE_NONE _DEBUGMODE_BASECOLOR _DEBUGMODE_NORMAL _DEBUGMODE_UV1 _DEBUGMODE_UV2
 
             #pragma shader_feature_local _MAPPING_POS_OBJ
 
             #pragma shader_feature_local _TK_DETAIL_ON
             #pragma multi_compile_local _ _TK_DETAIL_BLEND_LINNER _TK_DETAIL_BLEND_MULTIPLY _TK_DETAIL_BLEND_ADD _TK_DETAIL_BLEND_SUBTRACT
-            #pragma multi_compile_local _TK_DETAIL_MAPPINGMODE_NONE _TK_DETAIL_MAPPINGMODE_TRIPLANAR _TK_DETAIL_MAPPINGMODE_BIPLANAR _TK_DETAIL_MAPPINGMODE_DITHER_TRIPLANAR _TK_DETAIL_MAPPINGMODE_XYZMASK
+            #pragma multi_compile_local _TK_DETAIL_MAPPINGMODE_NONE _TK_DETAIL_MAPPINGMODE_UV2 _TK_DETAIL_MAPPINGMODE_TRIPLANAR _TK_DETAIL_MAPPINGMODE_BIPLANAR _TK_DETAIL_MAPPINGMODE_DITHER_TRIPLANAR _TK_DETAIL_MAPPINGMODE_XYZMASK
             #pragma multi_compile_local _TK_DETAIL_SAMPLERMODE_NONE _TK_DETAIL_SAMPLERMODE_STOCHASTIC _TK_DETAIL_SAMPLERMODE_HEX _TK_DETAIL_SAMPLERMODE_VOLONOI
 
             #pragma shader_feature_local _TK_THINFILM_ON
