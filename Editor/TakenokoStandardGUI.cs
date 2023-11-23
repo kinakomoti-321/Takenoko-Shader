@@ -1,11 +1,5 @@
 using System;
-using System.Drawing.Drawing2D;
-using System.Runtime.InteropServices;
-using Codice.Client.BaseCommands.TubeClient;
-using Codice.Foreign;
-using NUnit.Framework;
 using UnityEditor;
-using UnityEditor.Graphs;
 using UnityEngine;
 
 public class TakenokoStandardGUI : ShaderGUI
@@ -147,6 +141,7 @@ public class TakenokoStandardGUI : ShaderGUI
     MaterialProperty LightmapPower;
     MaterialProperty SHModeNonLiner;
     MaterialProperty SpecularOcclusion;
+    MaterialProperty SpecularOcclusionPower;
     MaterialProperty SHSpecular;
 
     MaterialProperty AddLightmap1_ON;
@@ -376,6 +371,7 @@ public class TakenokoStandardGUI : ShaderGUI
                     }
                     EditorGUI.indentLevel--;
                     materialEditor.ShaderProperty(SpecularOcclusion, "Specular Occlusion");
+                    materialEditor.ShaderProperty(SpecularOcclusionPower, "Specular Occlusion Power");
 
                     materialEditor.ShaderProperty(AddLightmap1_ON, "Add Lightmap1");
                     if (AddLightmap1_ON.floatValue > 0.0)
@@ -550,6 +546,7 @@ public class TakenokoStandardGUI : ShaderGUI
         LightmapPower = FindProperty("_LightmapPower", properties);
         SHModeNonLiner = FindProperty("_SHModeNonLiner", properties);
         SpecularOcclusion = FindProperty("_SpecularOcclusion", properties);
+        SpecularOcclusionPower = FindProperty("_SpecularOcclusionPower", properties);
         SHSpecular = FindProperty("_SHSpecular", properties);
 
         AddLightmap1_ON = FindProperty("_AddLightmap1_ON", properties);

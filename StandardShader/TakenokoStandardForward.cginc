@@ -46,6 +46,8 @@ float4 _PallaxMap_ST;
 
 float _LightmapPower;
 
+float _SpecularOcclusionPower;
+
 #if defined(_TK_DETAIL_ON)
     float _DetailMaskFactor;
     Texture2D _DetailMaskMap;
@@ -260,9 +262,9 @@ fixed4 FragTKStandardForwardBase(TKStandardVertexOutput i) : SV_Target
     #endif
 
     giInput.probeHDR[0] = unity_SpecCube0_HDR;
-    giInput.probeHDR[1] = unity_SpecCube1_HDR;
 
     #if defined(UNITY_SPECCUBE_BLENDING) || defined(UNITY_SPECCUBE_BOX_PROJECTION)
+        giInput.probeHDR[1] = unity_SpecCube1_HDR;
         giInput.boxMin[0] = unity_SpecCube0_BoxMin;
     #endif
 
@@ -303,7 +305,7 @@ fixed4 FragTKStandardForwardBase(TKStandardVertexOutput i) : SV_Target
         float specular_occulusion = 1.0f;
 
         #ifdef _SPECULAR_OCCLUSION
-            specular_occulusion = saturate(colorToLuminance(lightmapDiffuse));
+            specular_occulusion = pow(saturate(colorToLuminance(lightmapDiffuse) * 2.0f), _SpecularOcclusionPower);
         #endif
         
         shade_color = (lightmapDiffuse + main_diffuse) * (1.0f - matParam.metallic) + (main_specular + lightmapSpecular) * specular_occulusion;

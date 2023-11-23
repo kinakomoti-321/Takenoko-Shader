@@ -1,4 +1,4 @@
-﻿Shader "Takenoko/StandardShader"
+﻿Shader "Takenoko/Standard"
 {
     //------------------------------------
     //Naming convention
@@ -117,6 +117,7 @@
         _LightmapPower ("Add Lightmap Power", Range(0.0, 1.0)) = 1.0
         [Toggle(_SHMODE_NONLINER)] _SHModeNonLiner ("NonLiner SH", Float) = 1.0
         [Toggle(_SPECULAR_OCCLUSION)] _SpecularOcclusion ("Specular Occlusion", Float) = 0.0
+        _SpecularOcclusionPower ("Specular Occlusion Power", Range(0.0, 1.0)) = 1.0
         [Toggle(_SH_SPECULAR)] _SHSpecular ("SH Specular", Float) = 0.0
 
         //Addtional Lightmap
@@ -157,21 +158,22 @@
             CGPROGRAM
             #pragma vertex VertTKStandardForwardBase
             #pragma fragment FragTKStandardForwardBase
-            #pragma multi_compile_local _LIGHTMAPMODE_NONE _LIGHTMAPMODE_SH _LIGHTMAPMODE_MONOSH
-            #pragma multi_compile_local _MAPPINGMODE_NONE _MAPPINGMODE_UV2 _MAPPINGMODE_TRIPLANAR _MAPPINGMODE_BIPLANAR _MAPPINGMODE_DITHER_TRIPLANAR _MAPPINGMODE_XYZMASK
-            #pragma multi_compile_local _SAMPLERMODE_NONE _SAMPLERMODE_STOCHASTIC _SAMPLERMODE_HEX _SAMPLERMODE_VOLONOI
-            #pragma multi_compile_local _PARALLAXMODE_NONE _PARALLAXMODE_SIMPLE _PARALLAXMODE_STEEP
+            #pragma multi_compile_fwdbase
+            #pragma shader_feature_local _LIGHTMAPMODE_NONE _LIGHTMAPMODE_SH _LIGHTMAPMODE_MONOSH
+            #pragma shader_feature_local _MAPPINGMODE_NONE _MAPPINGMODE_UV2 _MAPPINGMODE_TRIPLANAR _MAPPINGMODE_BIPLANAR _MAPPINGMODE_DITHER_TRIPLANAR _MAPPINGMODE_XYZMASK
+            #pragma shader_feature_local _SAMPLERMODE_NONE _SAMPLERMODE_STOCHASTIC _SAMPLERMODE_HEX _SAMPLERMODE_VOLONOI
+            #pragma shader_feature_local _PARALLAXMODE_NONE _PARALLAXMODE_SIMPLE _PARALLAXMODE_STEEP
             
             #pragma shader_feature _ _ALPHATEST_ON _ALPHABLEND_ON _ALPHAPREMULTIPLY_ON
 
-            #pragma multi_compile _DEBUGMODE_NONE _DEBUGMODE_BASECOLOR _DEBUGMODE_NORMAL _DEBUGMODE_UV1 _DEBUGMODE_UV2
+            #pragma shader_feature_local _DEBUGMODE_NONE _DEBUGMODE_BASECOLOR _DEBUGMODE_NORMAL _DEBUGMODE_UV1 _DEBUGMODE_UV2
 
             #pragma shader_feature_local _MAPPING_POS_OBJ
 
             #pragma shader_feature_local _TK_DETAIL_ON
-            #pragma multi_compile_local _ _TK_DETAIL_BLEND_LINNER _TK_DETAIL_BLEND_MULTIPLY _TK_DETAIL_BLEND_ADD _TK_DETAIL_BLEND_SUBTRACT
-            #pragma multi_compile_local _TK_DETAIL_MAPPINGMODE_NONE _TK_DETAIL_MAPPINGMODE_UV2 _TK_DETAIL_MAPPINGMODE_TRIPLANAR _TK_DETAIL_MAPPINGMODE_BIPLANAR _TK_DETAIL_MAPPINGMODE_DITHER_TRIPLANAR _TK_DETAIL_MAPPINGMODE_XYZMASK
-            #pragma multi_compile_local _TK_DETAIL_SAMPLERMODE_NONE _TK_DETAIL_SAMPLERMODE_STOCHASTIC _TK_DETAIL_SAMPLERMODE_HEX _TK_DETAIL_SAMPLERMODE_VOLONOI
+            #pragma shader_feature_local _ _TK_DETAIL_BLEND_LINNER _TK_DETAIL_BLEND_MULTIPLY _TK_DETAIL_BLEND_ADD _TK_DETAIL_BLEND_SUBTRACT
+            #pragma shader_feature_local _TK_DETAIL_MAPPINGMODE_NONE _TK_DETAIL_MAPPINGMODE_UV2 _TK_DETAIL_MAPPINGMODE_TRIPLANAR _TK_DETAIL_MAPPINGMODE_BIPLANAR _TK_DETAIL_MAPPINGMODE_DITHER_TRIPLANAR _TK_DETAIL_MAPPINGMODE_XYZMASK
+            #pragma shader_feature_local _TK_DETAIL_SAMPLERMODE_NONE _TK_DETAIL_SAMPLERMODE_STOCHASTIC _TK_DETAIL_SAMPLERMODE_HEX _TK_DETAIL_SAMPLERMODE_VOLONOI
 
             #pragma shader_feature_local _TK_THINFILM_ON
             #pragma shader_feature_local _TK_THINFILM_USE_MAP
@@ -205,25 +207,25 @@
             ZWrite Off
             CGPROGRAM
 
-            #pragma enable_d3d11_debug_symbols
-
             #pragma vertex VertTKStandardAdd
             #pragma fragment FragTKStandardAdd
 
-            #pragma multi_compile_local _MAPPINGMODE_NONE _MAPPINGMODE_UV2 _MAPPINGMODE_TRIPLANAR _MAPPINGMODE_BIPLANAR _MAPPINGMODE_DITHER_TRIPLANAR _MAPPINGMODE_XYZMASK
-            #pragma multi_compile_local _SAMPLERMODE_NONE _SAMPLERMODE_STOCHASTIC _SAMPLERMODE_HEX _SAMPLERMODE_VOLONOI
-            #pragma multi_compile_local _PARALLAXMODE_NONE _PARALLAXMODE_SIMPLE _PARALLAXMODE_STEEP
+            #pragma multi_compile_fwdadd
+
+            #pragma shader_feature_local _MAPPINGMODE_NONE _MAPPINGMODE_UV2 _MAPPINGMODE_TRIPLANAR _MAPPINGMODE_BIPLANAR _MAPPINGMODE_DITHER_TRIPLANAR _MAPPINGMODE_XYZMASK
+            #pragma shader_feature_local _SAMPLERMODE_NONE _SAMPLERMODE_STOCHASTIC _SAMPLERMODE_HEX _SAMPLERMODE_VOLONOI
+            #pragma shader_feature_local _PARALLAXMODE_NONE _PARALLAXMODE_SIMPLE _PARALLAXMODE_STEEP
 
             #pragma shader_feature _ _ALPHATEST_ON _ALPHABLEND_ON _ALPHAPREMULTIPLY_ON
 
-            #pragma multi_compile _DEBUGMODE_NONE _DEBUGMODE_BASECOLOR _DEBUGMODE_NORMAL _DEBUGMODE_UV1 _DEBUGMODE_UV2
+            #pragma shader_feature_local _DEBUGMODE_NONE _DEBUGMODE_BASECOLOR _DEBUGMODE_NORMAL _DEBUGMODE_UV1 _DEBUGMODE_UV2
             
             #pragma shader_feature_local _MAPPING_POS_OBJ
 
             #pragma shader_feature_local _TK_DETAIL_ON
-            #pragma multi_compile_local _ _TK_DETAIL_BLEND_LINNER _TK_DETAIL_BLEND_MULTIPLY _TK_DETAIL_BLEND_ADD _TK_DETAIL_BLEND_SUBTRACT
-            #pragma multi_compile_local _TK_DETAIL_MAPPINGMODE_NONE _TK_DETAIL_MAPPINGMODE_UV2 _TK_DETAIL_MAPPINGMODE_TRIPLANAR _TK_DETAIL_MAPPINGMODE_BIPLANAR _TK_DETAIL_MAPPINGMODE_DITHER_TRIPLANAR _TK_DETAIL_MAPPINGMODE_XYZMASK
-            #pragma multi_compile_local _TK_DETAIL_SAMPLERMODE_NONE _TK_DETAIL_SAMPLERMODE_STOCHASTIC _TK_DETAIL_SAMPLERMODE_HEX _TK_DETAIL_SAMPLERMODE_VOLONOI
+            #pragma shader_feature_local _ _TK_DETAIL_BLEND_LINNER _TK_DETAIL_BLEND_MULTIPLY _TK_DETAIL_BLEND_ADD _TK_DETAIL_BLEND_SUBTRACT
+            #pragma shader_feature_local _TK_DETAIL_MAPPINGMODE_NONE _TK_DETAIL_MAPPINGMODE_UV2 _TK_DETAIL_MAPPINGMODE_TRIPLANAR _TK_DETAIL_MAPPINGMODE_BIPLANAR _TK_DETAIL_MAPPINGMODE_DITHER_TRIPLANAR _TK_DETAIL_MAPPINGMODE_XYZMASK
+            #pragma shader_feature_local _TK_DETAIL_SAMPLERMODE_NONE _TK_DETAIL_SAMPLERMODE_STOCHASTIC _TK_DETAIL_SAMPLERMODE_HEX _TK_DETAIL_SAMPLERMODE_VOLONOI
 
             #pragma shader_feature_local _TK_THINFILM_ON
             #pragma shader_feature_local _TK_THINFILM_USE_MAP
