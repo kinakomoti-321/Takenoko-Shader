@@ -423,31 +423,31 @@ public class TakenokoStandardGUI : ShaderGUI
 
             GUILayout.Space(10);
 
-            if (MenuFoldout(ExperimentalMenu, "Experimental"))
-            {
-                GUILayout.Space(5);
-                EditorGUI.indentLevel++;
-                using (new EditorGUILayout.VerticalScope("HelpBox"))
-                {
-                    materialEditor.ShaderProperty(Cloth_ON, "Cloth");
-                    materialEditor.ShaderProperty(ClothAlbedo1, "Albedo1");
-                    materialEditor.ShaderProperty(ClothAlbedo2, "Albedo2");
-                    materialEditor.ShaderProperty(ClothIOR1, "IOR1");
-                    materialEditor.ShaderProperty(ClothIOR2, "IOR2");
-                    materialEditor.ShaderProperty(ClothKd1, "Kd1");
-                    materialEditor.ShaderProperty(ClothKd2, "Kd2");
-                    materialEditor.ShaderProperty(ClothGammaV1, "GammaV1");
-                    materialEditor.ShaderProperty(ClothGammaV2, "GammaV2");
-                    materialEditor.ShaderProperty(ClothGammaS1, "GammaS1");
-                    materialEditor.ShaderProperty(ClothGammaS2, "GammaS2");
-                    materialEditor.ShaderProperty(ClothAlpha1, "Alpha1");
-                    materialEditor.ShaderProperty(ClothAlpha2, "Alpha2");
-                    materialEditor.ShaderProperty(ClothTangentOffset1, "TangentOffset1");
-                    materialEditor.ShaderProperty(ClothTangentOffset2, "TangentOffset2");
-                }
-                EditorGUI.indentLevel--;
-                GUILayout.Space(5);
-            }
+            // if (MenuFoldout(ExperimentalMenu, "Experimental"))
+            // {
+            //     GUILayout.Space(5);
+            //     EditorGUI.indentLevel++;
+            //     using (new EditorGUILayout.VerticalScope("HelpBox"))
+            //     {
+            //         materialEditor.ShaderProperty(Cloth_ON, "Cloth");
+            //         materialEditor.ShaderProperty(ClothAlbedo1, "Albedo1");
+            //         materialEditor.ShaderProperty(ClothAlbedo2, "Albedo2");
+            //         materialEditor.ShaderProperty(ClothIOR1, "IOR1");
+            //         materialEditor.ShaderProperty(ClothIOR2, "IOR2");
+            //         materialEditor.ShaderProperty(ClothKd1, "Kd1");
+            //         materialEditor.ShaderProperty(ClothKd2, "Kd2");
+            //         materialEditor.ShaderProperty(ClothGammaV1, "GammaV1");
+            //         materialEditor.ShaderProperty(ClothGammaV2, "GammaV2");
+            //         materialEditor.ShaderProperty(ClothGammaS1, "GammaS1");
+            //         materialEditor.ShaderProperty(ClothGammaS2, "GammaS2");
+            //         materialEditor.ShaderProperty(ClothAlpha1, "Alpha1");
+            //         materialEditor.ShaderProperty(ClothAlpha2, "Alpha2");
+            //         materialEditor.ShaderProperty(ClothTangentOffset1, "TangentOffset1");
+            //         materialEditor.ShaderProperty(ClothTangentOffset2, "TangentOffset2");
+            //     }
+            //     EditorGUI.indentLevel--;
+            //     GUILayout.Space(5);
+            // }
 
         }
         if (EditorGUI.EndChangeCheck())

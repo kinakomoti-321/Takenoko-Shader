@@ -210,7 +210,7 @@
             #pragma vertex VertTKStandardAdd
             #pragma fragment FragTKStandardAdd
 
-            #pragma multi_compile_fwdadd
+            #pragma multi_compile_fwdadd_fullshadows
 
             #pragma shader_feature_local _MAPPINGMODE_NONE _MAPPINGMODE_UV2 _MAPPINGMODE_TRIPLANAR _MAPPINGMODE_BIPLANAR _MAPPINGMODE_DITHER_TRIPLANAR _MAPPINGMODE_XYZMASK
             #pragma shader_feature_local _SAMPLERMODE_NONE _SAMPLERMODE_STOCHASTIC _SAMPLERMODE_HEX _SAMPLERMODE_VOLONOI
