@@ -32,7 +32,7 @@ public class TakenokoStandardGUI : ShaderGUI
     {
         None,
         Simple,
-        Steep,
+        Step,
     }
 
     private enum SamplerModeEnum
@@ -705,7 +705,7 @@ public class TakenokoStandardGUI : ShaderGUI
                 SetKeyward(material, "_PARALLAXMODE_SIMPLE", true);
                 SetKeyward(material, "_PARALLAXMODE_STEEP", false);
                 break;
-            case ParallaxModeEnum.Steep:
+            case ParallaxModeEnum.Step:
                 SetKeyward(material, "_PARALLAXMODE_NONE", false);
                 SetKeyward(material, "_PARALLAXMODE_SIMPLE", false);
                 SetKeyward(material, "_PARALLAXMODE_STEEP", true);

@@ -81,7 +81,7 @@
 
         //Emission
         [Toggle(_EMISSION)] _Emission ("Emission", Float) = 0.0
-        [Enum(None, 0, RealTime, 1, Bake, 2)] _EmissionMode ("Emission Mode", Int) = 0
+        [Enum(None, 0, RealTime, 1, Bake, 2)] _EmissionMode ("Emission Mode", Int) = 2
         [HDR] _EmissionColor ("Color", Color) = (0, 0, 0, 0)
         _EmissionMap ("Emission", 2D) = "white" { }
 
