@@ -2,7 +2,7 @@
 Takenoko ShaderはUnity向けのPBR Standard Shaderです。
 標準のStandard Shaderにいくつか実験的機能を追加し、より現実に近いシェーディングになるように設計されています。また、特殊な反射現象の再現を目的としており、現在では薄膜干渉をサポートしています。
 
-[Documentaion](document/Takenoko Shader Document_beta1.0.0.pdf)
+[Documentaion](document/Takenoko_Shader_Manual_beta1.0.0.pdf)
 
 [Booth](https://kinankocraft.booth.pm/items/5267948)
 
